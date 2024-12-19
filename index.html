@@ -48,20 +48,24 @@
         const light = new THREE.DirectionalLight(0xffffff, 4); // color, intensity
         light.position.set(5, 10, 7.5); // x, y, z
         scene.add(light);
+        // const gridHelper = new THREE.GridHelper(20, 20); // 10x10 grid with 10 divisions
+        //     scene.add(gridHelper)
 
         // 3. Helper Function: Adjust Camera to Fit Scene
         function adjustCameraToFitScene() {
             const box = new THREE.Box3().setFromObject(scene);
             const size = new THREE.Vector3();
-            const center = new THREE.Vector3();
+            const center = new THREE.Vector3(); 
             box.getSize(size);
             box.getCenter(center);
 
             // Adjust camera position and controls
-            const maxDim = Math.max(size.x, size.y, size.z);
-            const fov = camera.fov * (Math.PI / 180);
-            const distance = maxDim / (2 * Math.tan(fov / 2)) + maxDim;
-            camera.position.set(center.x, center.y + distance, center.z + distance);
+            // const maxDim = Math.max(size.x, size.y, size.z);
+            // const fov = camera.fov * (Math.PI / 180);
+            // const distance = maxDim / (2 * Math.tan(fov / 2)) + maxDim;
+
+            // This is for the in ital position 
+            camera.position.set(0,1.5,1.5); // adjust x, y, z as needed
             camera.lookAt(center);
             controls.target.copy(center);
             controls.update();
@@ -71,10 +75,10 @@
         const loader = new GLTFLoader();
 
         // Load table model
-        loader.load("models/table/scene.gltf", function (gltf) {
+        loader.load("./models/lab_bench.glb", function (gltf) {
             const table = gltf.scene;
             table.position.set(0, 0, 0);
-            table.rotation.y = Math.PI; // Rotate the model 180 degrees around the Y-axis
+            //table.rotation.y = Math.PI; // Rotate the model 180 degrees around the Y-axis
             scene.add(table);
             adjustCameraToFitScene(); // Adjust camera after adding the table
         },
@@ -85,9 +89,9 @@
         );
 
         // Example: Load another model (e.g., petri dish)
-        loader.load("models/petridish_and_loop/scene.gltf", function (gltf) {
+        loader.load("./models/petridish_and_loop.glb", function (gltf) {
             const petriDish = gltf.scene;
-            petriDish.position.set(5, 1, -0.5); //x, y, z Adjust as needed
+            petriDish.position.set(0.88,0.53, 0.1); //x, y, z Adjust as needed
             scene.add(petriDish);
             adjustCameraToFitScene(); // Adjust camera after adding the petri dish
         },
