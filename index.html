@@ -37,13 +37,15 @@
             1000
         );
         const renderer = new THREE.WebGLRenderer({ antialias: true });
+        // Set background color of the scene
+        renderer.setClearColor("#bfbfbf");
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
 
         // 2. Add Lighting
-        const light = new THREE.DirectionalLight(0xffffff, 1); // color, intensity
+        const light = new THREE.DirectionalLight(0xffffff, 4); // color, intensity
         light.position.set(5, 10, 7.5); // x, y, z
         scene.add(light);
 
