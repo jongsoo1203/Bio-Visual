@@ -1,85 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" /> <!-- Character encoding for the document -->
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!-- Viewport settings for responsive design -->
-        <title>3D Lab Simulation</title> <!-- Title of the webpage -->
-        <style>
-            body {
-                margin: 0;
-                overflow: hidden; 
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3D Lab Simulation</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@latest/build/three.module.js",
+          "three/examples/jsm/loaders/GLTFLoader.js": "https://cdn.jsdelivr.net/npm/three@latest/examples/jsm/loaders/GLTFLoader.js",
+          "three/examples/jsm/controls/OrbitControls.js": "https://cdn.jsdelivr.net/npm/three@latest/examples/jsm/controls/OrbitControls.js"
+        }
+      }
+    </script>
+</head>
+
+<body>
+    <script type="module">
+        import * as THREE from "three";
+        import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+        import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+
+        // 1. Set up Scene, Camera, Renderer, and OrbitControls
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(
+            75,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            1000
+        );
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+
+        // 2. Add Lighting
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(5, 10, 7.5);
+        scene.add(light);
+
+        // 3. Helper Function: Adjust Camera to Fit Scene
+        function adjustCameraToFitScene() {
+            const box = new THREE.Box3().setFromObject(scene);
+            const size = new THREE.Vector3();
+            const center = new THREE.Vector3();
+            box.getSize(size);
+            box.getCenter(center);
+
+            // Adjust camera position and controls
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const fov = camera.fov * (Math.PI / 180);
+            const distance = maxDim / (2 * Math.tan(fov / 2)) + maxDim;
+            camera.position.set(center.x, center.y + distance, center.z + distance);
+            camera.lookAt(center);
+            controls.target.copy(center);
+            controls.update();
+        }
+
+        // 4. Load Models Dynamically
+        const loader = new GLTFLoader();
+
+        // Load table model
+        loader.load("./table/scene.gltf", function (gltf) {
+            const table = gltf.scene;
+            table.position.set(0, 0, 0);
+            scene.add(table);
+            adjustCameraToFitScene(); // Adjust camera after adding the table
+        },
+            undefined,
+            function (error) {
+                console.error("Error loading table model:", error);
             }
-        </style>
-        <script type="importmap">
-            {
-                "imports": {
-                    "three": "https://cdn.jsdelivr.net/npm/three@latest/build/three.module.js", 
-                    "three/examples/jsm/loaders/GLTFLoader.js": "https://cdn.jsdelivr.net/npm/three@latest/examples/jsm/loaders/GLTFLoader.js",
-                    "three/examples/jsm/controls/OrbitControls.js": "https://cdn.jsdelivr.net/npm/three@latest/examples/jsm/controls/OrbitControls.js"
-                }
+        );
+
+        // Example: Load another model (e.g., petri dish)
+        loader.load("./petri_dish/scene.gltf", function (gltf) {
+            const petriDish = gltf.scene;
+            petriDish.position.set(1, 0, 0); // Adjust as needed
+            scene.add(petriDish);
+            adjustCameraToFitScene(); // Adjust camera after adding the petri dish
+        },
+            undefined,
+            function (error) {
+                console.error("Error loading petri dish model:", error);
             }
-        </script>
-    </head>
+        );
 
-    <body>
-        <script type="module">
-            import * as THREE from "three"; // Import all exports from Three.js library
-            import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js"; // Import GLTFLoader for loading 3D models
-            import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"; // Import OrbitControls for camera control
- 
+        // 5. Handle Window Resize
+        window.addEventListener("resize", () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
 
-            // 1. Set up Scene, Camera, and Renderer
-            const scene = new THREE.Scene(); // Create a new Three.js scene
-            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000); // Create a perspective camera with FOV 75, aspect ratio, near and far clipping planes
-            const renderer = new THREE.WebGLRenderer({ antialias: true }); // Create a WebGL renderer with antialiasing enabled
-            renderer.setSize(window.innerWidth, window.innerHeight); // Set the size of the renderer to the window size
-            document.body.appendChild(renderer.domElement); // Append the renderer's canvas element to the document body
+        // 6. Animation Loop
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update(); // Smooth controls
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
 
-            // 2. Add Lighting
-            const light = new THREE.DirectionalLight(0xffffff, 1); // Create a directional light with white color and intensity 1
-            light.position.set(5, 10, 7.5); // Set the position of the light
-            scene.add(light); // Add the light to the scene
-
-            // 3. Orbit Controls
-                const controls = new OrbitControls(camera, renderer.domElement);
-                controls.enableDamping = true; // Smooth controls
-                controls.dampingFactor = 0.05; // Damping inertia
-                controls.screenSpacePanning = false; // Lock panning on screen
-                controls.minDistance = 1; // Minimum zoom distance
-                controls.maxDistance = 50; // Maximum zoom distance
-                controls.target.set(0, 0, 0); // Focus on the center of the scene
-
-            // 4. Load GLTF Model
-            const loader = new GLTFLoader(); // Create a new GLTFLoader for loading 3D models
-            loader.load("./table/scene.gltf", function (gltf) { // Load the GLTF model from the specified path
-                const model = gltf.scene; // Get the loaded 3D model from the GLTF file
-                model.position.set(9, 1, 1); // Set the position of the model
-                model.scale.set(1, 1, 1); // Set the scale of the model
-                scene.add(model); // Add the model to the scene
-            },
-            undefined, // Optional progress callback (not used)
-            function (error) { // Error callback function
-                console.error("Error loading model:", error); // Log an error message if the model fails to load
-            }
-            );
-
-            // 5. Set Camera Position
-            camera.position.set(5, 5, 5); // Set the initial position of the camera
-            camera.lookAt(0, 0, 0); // Make the camera look at the origin (0, 0, 0)
-
-            // 6. Handle Window Resize
-            window.addEventListener("resize", () => { // Add an event listener for window resize
-            camera.aspect = window.innerWidth / window.innerHeight; // Update the camera's aspect ratio
-            camera.updateProjectionMatrix(); // Update the camera's projection matrix
-            renderer.setSize(window.innerWidth, window.innerHeight); // Update the renderer's size
-            });
-
-            // 7. Animation Loop
-            function animate() {
-            requestAnimationFrame(animate); // Request the next frame of the animation
-            renderer.render(scene, camera); // Render the scene from the perspective of the camera
-            }
-            animate(); // Start the animation loop
-        </script>
-    </body>
 </html>
