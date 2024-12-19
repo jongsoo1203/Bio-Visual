@@ -43,8 +43,8 @@
         controls.enableDamping = true;
 
         // 2. Add Lighting
-        const light = new THREE.DirectionalLight(0xffffff, 1);
-        light.position.set(5, 10, 7.5);
+        const light = new THREE.DirectionalLight(0xffffff, 1); // color, intensity
+        light.position.set(5, 10, 7.5); // x, y, z
         scene.add(light);
 
         // 3. Helper Function: Adjust Camera to Fit Scene
@@ -69,9 +69,10 @@
         const loader = new GLTFLoader();
 
         // Load table model
-        loader.load("./table/scene.gltf", function (gltf) {
+        loader.load("models/table/scene.gltf", function (gltf) {
             const table = gltf.scene;
             table.position.set(0, 0, 0);
+            table.rotation.y = Math.PI; // Rotate the model 180 degrees around the Y-axis
             scene.add(table);
             adjustCameraToFitScene(); // Adjust camera after adding the table
         },
@@ -82,9 +83,9 @@
         );
 
         // Example: Load another model (e.g., petri dish)
-        loader.load("./petri_dish/scene.gltf", function (gltf) {
+        loader.load("models/petridish_and_loop/scene.gltf", function (gltf) {
             const petriDish = gltf.scene;
-            petriDish.position.set(1, 0, 0); // Adjust as needed
+            petriDish.position.set(5, 1, -0.5); //x, y, z Adjust as needed
             scene.add(petriDish);
             adjustCameraToFitScene(); // Adjust camera after adding the petri dish
         },
