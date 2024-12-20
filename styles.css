@@ -1,0 +1,31 @@
+#persistentInstructions {
+    position: fixed; /* Changed from absolute to fixed */
+    top: 20px;
+    right: 20px;
+    background-color: rgba(255, 255, 255, 0.95);
+    border: 1px solid #ccc;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    max-width: 300px;
+    transition: opacity 0.3s ease-in-out;
+    opacity: 1;
+}
+
+#persistentInstructions.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+#persistentInstructionTitle {
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+#persistentInstructionText {
+    font-size: 0.95rem;
+    line-height: 1.4;
+    color: #666;
+}

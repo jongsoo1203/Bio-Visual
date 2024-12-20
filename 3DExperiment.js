@@ -119,6 +119,35 @@ const gridHelper = new THREE.GridHelper(40, 400); // Size of the grid and number
 gridHelper.position.set(0, -0.5, 0); // Ensure it's centered at the origin
 scene.add(gridHelper);
 
+/**
+ * Function: onStepComplete
+ * Handles logic when a step is completed in the 3D environment.
+ * @param {string} flag - The identifier of the completed step.
+ * @param {function} triggerNextStep - Callback to trigger the next step.
+ */
+export function onStepComplete(flag, triggerNextStep) {
+  console.log(`Step completed with flag: ${flag}`);
+
+  // Perform 3D logic based on the completed step
+  switch (flag) {
+    case "step1":
+      console.log("Step 1 logic executed.");
+      // Example: Enable interaction with the next 3D object
+      // enableNext3DObject("step2Object");
+      break;
+    case "step2":
+      console.log("Step 2 logic executed.");
+      // Example: Play an animation or update the scene
+      // playAnimation("step2Animation");
+      break;
+    default:
+      console.warn(`No specific logic defined for flag: ${flag}`);
+  }
+
+  // Trigger the next step using the callback
+  triggerNextStep(flag);
+}
+
 // === Load Models Dynamically ===
 const loader = new GLTFLoader();
 
