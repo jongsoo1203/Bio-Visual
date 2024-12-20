@@ -148,6 +148,38 @@ loader.load("./models/petridish_and_loop.glb", (gltf) => {
   scene.add(petriDish);
 });
 
+// Load the flint striker
+loader.load("./models/flint_striker.glb", (gltf) => {
+  const flintStriker = gltf.scene;
+  flintStriker.name = "Flint Striker";
+
+  // Add meshes to selectable objects for interaction
+  flintStriker.traverse((child) => {
+    if (child.isMesh) {
+      child.material = child.material.clone(); // Clone material to avoid sharing
+      selectableObjects.push(child); // Make it selectable
+    }
+  });
+
+  scene.add(flintStriker);
+});
+
+// Load the final result
+loader.load("./models/final_result.glb", (gltf) => {
+  const finalResult = gltf.scene;
+  finalResult.name = "Final Result"; // Assign a name for identification
+
+  // Traverse and add its meshes to selectable objects for interaction
+  finalResult.traverse((child) => {
+    if (child.isMesh) {
+      child.material = child.material.clone(); // Clone material to avoid sharing
+      selectableObjects.push(child); // Make it selectable
+    }
+  });
+
+  scene.add(finalResult); // Add the model to the scene
+});
+
 // Load gloves
 loader.load("./models/glove.glb", (gltf) => {
   const glove1 = gltf.scene;

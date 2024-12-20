@@ -1,3 +1,5 @@
+import { instructionSteps } from "./instructionSteps.js"; // import the instruction steps data
+
 document.addEventListener("DOMContentLoaded", () => {
   const popup = document.getElementById("popup");
   const startExperimentButton = document.getElementById("startExperiment");
@@ -8,23 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const nextStepButton = document.getElementById("nextStep");
 
   // Instruction steps data
-  const instructionSteps = [
-    {
-      flag: "step1",
-      title: "Safety First: Wear the Gloves",
-      text: "Click on the gloves to wear them.",
-    },
-    {
-      flag: "step2",
-      title: "Step 2: Use the Swab",
-      text: "Take the swab and gently collect a sample from the petri dish.",
-    },
-    {
-      flag: "step3",
-      title: "Step 3: Place the Swab in the Tube",
-      text: "Finally, place the swab into the test tube to complete the experiment.",
-    },
-  ];
+  // I have moved this data to a separate file for better organization
 
   let currentStep = 0;
 
