@@ -2,120 +2,50 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D Lab Simulation</title>
-    <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-        }
-    </style>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"> <!-- Link to Tailwind CSS -->
     <script type="importmap">
-      {
-        "imports": {
-          "three": "https://cdn.jsdelivr.net/npm/three@latest/build/three.module.js",
-          "three/examples/jsm/loaders/GLTFLoader.js": "https://cdn.jsdelivr.net/npm/three@latest/examples/jsm/loaders/GLTFLoader.js",
-          "three/examples/jsm/controls/OrbitControls.js": "https://cdn.jsdelivr.net/npm/three@latest/examples/jsm/controls/OrbitControls.js"
-        }
-      }
-    </script>
+            {
+                "imports": {
+                    "three": "https://cdn.jsdelivr.net/npm/three@latest/build/three.module.js",
+                    "three/examples/jsm/loaders/GLTFLoader.js": "https://cdn.jsdelivr.net/npm/three@latest/examples/jsm/loaders/GLTFLoader.js",
+                    "three/examples/jsm/controls/OrbitControls.js": "https://cdn.jsdelivr.net/npm/three@latest/examples/jsm/controls/OrbitControls.js"
+                }
+            }
+        </script>
 </head>
 
-<body>
-    <script type="module">
-        import * as THREE from "three";
-        import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-        import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+<body class="bg-gray-100 w-full m-0 p-0">
+    <!-- Pop-up Window -->
+    <div id="popup" class="popup fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75">
+        <div class="popup-content bg-white p-8 rounded-lg shadow-lg text-center">
+            <h1 class="text-2xl font-bold mb-4">Welcome to the 3D Lab Experiment</h1>
+            <h2 class="text-lg font-semibold mb-4">Streaking for Isolation</h2>
+            <p class="mb-6">This experiment allows you to interact with lab equipment and prepare for the in person lab</p>
+            <button id="startExperiment" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">Start Experiment</button>
+        </div>
+    </div>
 
-        // 1. Set up Scene, Camera, Renderer, and OrbitControls
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(
-            75,
-            window.innerWidth / window.innerHeight,
-            0.1,
-            1000
-        );
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        // Set background color of the scene
-        renderer.setClearColor("#bfbfbf");
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
+    <!-- Pop-up Window -->
+    <div id="instructionPopup"
+        class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 hidden z-10 opacity-0 transition-opacity duration-500">
+        <div class="bg-white p-6 rounded-lg shadow-lg text-center w-1/3">
+            <h2 id="instructionTitle" class="text-2xl font-bold mb-4">Instruction Title</h2>
+            <p id="instructionText" class="mb-6">Instruction text goes here.</p>
+            <button id="nextStep" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
+                OK
+            </button>
+        </div>
+    </div>
 
-        // 2. Add Lighting
-        const light = new THREE.DirectionalLight(0xffffff, 4); // color, intensity
-        light.position.set(5, 10, 7.5); // x, y, z
-        scene.add(light);
-        // const gridHelper = new THREE.GridHelper(20, 20); // 10x10 grid with 10 divisions
-        //     scene.add(gridHelper)
+    <!-- Main 3D Experiment Section -->
+    <div id="experimentContainer" class="container p-4 mx-auto">
+        <!-- The 3D experiment will be rendered here -->
+    </div>
 
-        // 3. Helper Function: Adjust Camera to Fit Scene
-        function adjustCameraToFitScene() {
-            const box = new THREE.Box3().setFromObject(scene);
-            const size = new THREE.Vector3();
-            const center = new THREE.Vector3(); 
-            box.getSize(size);
-            box.getCenter(center);
-
-            // Adjust camera position and controls
-            // const maxDim = Math.max(size.x, size.y, size.z);
-            // const fov = camera.fov * (Math.PI / 180);
-            // const distance = maxDim / (2 * Math.tan(fov / 2)) + maxDim;
-
-            // This is for the in ital position 
-            camera.position.set(0,1.5,1.5); // adjust x, y, z as needed
-            camera.lookAt(center);
-            controls.target.copy(center);
-            controls.update();
-        }
-
-        // 4. Load Models Dynamically
-        const loader = new GLTFLoader();
-
-        // Load table model
-        loader.load("./models/lab_bench.glb", function (gltf) {
-            const table = gltf.scene;
-            table.position.set(0, 0, 0);
-            //table.rotation.y = Math.PI; // Rotate the model 180 degrees around the Y-axis
-            scene.add(table);
-            adjustCameraToFitScene(); // Adjust camera after adding the table
-        },
-            undefined,
-            function (error) {
-                console.error("Error loading table model:", error);
-            }
-        );
-
-        // Example: Load another model (e.g., petri dish)
-        loader.load("./models/petridish_and_loop.glb", function (gltf) {
-            const petriDish = gltf.scene;
-            petriDish.position.set(0.88,0.53, 0.1); //x, y, z Adjust as needed
-            scene.add(petriDish);
-            adjustCameraToFitScene(); // Adjust camera after adding the petri dish
-        },
-            undefined,
-            function (error) {
-                console.error("Error loading petri dish model:", error);
-            }
-        );
-
-        // 5. Handle Window Resize
-        window.addEventListener("resize", () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        // 6. Animation Loop
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update(); // Smooth controls
-            renderer.render(scene, camera);
-        }
-        animate();
-    </script>
+    <script type="module" src="main.js"></script> <!-- Include JavaScript -->
 </body>
 
 </html>

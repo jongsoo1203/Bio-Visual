@@ -1,3 +1,5 @@
+# Don't change file structure, if you do so tell me beforehand.
+
 ## Usefull Info 
 
 - The canter aka (0,0,0) is gonna be the lab table 
