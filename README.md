@@ -3,12 +3,10 @@ repo tree
 C:.
 └─models
     └─flint_striker
+    
 ## Usefull Info 
-
 - The canter aka (0,0,0) is gonna be the lab table 
 - The camera should be person height ( that is what is set to now )
-
-
 
 ## Things we HAVE to add
 - Instructions for students to follow
