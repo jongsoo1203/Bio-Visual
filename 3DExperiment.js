@@ -143,9 +143,6 @@ export function onStepComplete(flag, triggerNextStep) {
     default:
       console.warn(`No specific logic defined for flag: ${flag}`);
   }
-
-  // Trigger the next step using the callback
-  triggerNextStep(flag);
 }
 
 // === Load Models Dynamically ===
