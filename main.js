@@ -1,3 +1,7 @@
+// Description: Main JavaScript file for the experiment.
+// Jongsoo Ha and Lorenzo Orio (2024)
+
+
 import { instructionSteps } from "./instructionSteps.js"; // import the instruction steps data
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -10,11 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const nextStepButton = document.getElementById("nextStep");
   const stepDisplay = document.getElementById("stepDisplay");
 
-  // Instruction steps data
-  // I have moved this data to a separate file for better organization
-
-  let currentStep = 0;
-  let flintStrikerClicked = false; // Flag for the flint striker step
+// ---------------------------------------------------- Main Script ---------------------------------------------------- //
 
   /**
    * Function: Show a specific instruction step.
@@ -72,8 +72,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const step = instructionSteps[currentStep];
     console.log(`Current Step: ${step.flag}`); // Log current step immediately
 
-    // Special handling for step3
-    if (step.flag === "step3" && !flintStrikerClicked) {
+    // Special handling for step4
+    if (step.flag === "step4") {
       updateStepDisplay(step.text);
       handleStepCompletion(step.flag); // Still handle the step completion
       return;
@@ -86,7 +86,12 @@ document.addEventListener("DOMContentLoaded", () => {
       updateStepDisplay(step.text);
     }
     handleStepCompletion(step.flag); // Handle the completion of the current step
-});
+  });
+
+// ---------------------------------------------------- End of Main Script ---------------------------------------------------- //
+
+  let currentStep = 0;
+  let flintStrikerClicked = false; // Flag for the flint striker step
 
   /**
    * Function: Trigger the next instruction step from the 3D environment.
@@ -96,8 +101,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const nextStepIndex =
       instructionSteps.findIndex((step) => step.flag === flag) + 1;
 
-      // Set the flintStrikerClicked flag when step3 is completed
-    if (flag === "step3") {
+      // Set the flintStrikerClicked flag when step2 is completed
+    if (flag === "step2") {
       flintStrikerClicked = true;
     }
 

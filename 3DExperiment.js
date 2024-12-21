@@ -1,8 +1,11 @@
-// Import necessary modules
+// Description: This file contains the 3D experiment logic for the virtual lab.
+// Jongsoo Ha and Lorenzo Orio (2024)
+
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
+// -----------------------------------------------set up the 3D environment-----------------------------------------------
 // === Scene, Camera, and Renderer Setup ===
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(
@@ -39,14 +42,7 @@ const mouse = new THREE.Vector2();
 const selectableObjects = []; // Objects that can be hovered or clicked
 let previouslyHoveredObject = null; // Track the last hovered object
 
-
-// === After Clicking Each Step Object ===
-let glove1, glove2; // to remove the gloves after clicking]
-let finalResult; // to make the final result visible at the last step
-let petriDish;
-let flintStriker;
-
-// Highlight on hover
+// === Highlight on Hover ===
 window.addEventListener("mousemove", (event) => {
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -94,6 +90,17 @@ window.addEventListener("mousemove", (event) => {
   }
 });
 
+// -----------------------------------------------End of set up----------------------------------------------
+
+
+// === After Clicking Each Step Object ===
+// they are used to store the 3D models
+let glove1, glove2;
+let finalResult; 
+let petriDish;
+let flintStriker;
+
+
 // === Add Click Feature to Trigger Next Step ===
 export function startExperiment(triggerNextStep) {
   // Add event listener for clicks
@@ -108,8 +115,6 @@ export function startExperiment(triggerNextStep) {
       const parentObject = clickedObject.parent; // Get the parent group of the clicked object
 
       console.log(`Clicked on: ${clickedObject.name || "Unnamed Object"}`);
-      console.log(`Parent object: ${parentObject.name || "Unnamed Parent"}`);
-
 
       // Trigger the next step based on the clicked object's name
       switch (true) {
@@ -120,15 +125,20 @@ export function startExperiment(triggerNextStep) {
           glove2.visible = false;
           triggerNextStep("step1"); // Trigger the next step for Petri Dish
           break;
-        case clickedObject.name === "Circle001":
-          console.log("Circle001 clicked!");
-          petriDish.visible = false;
-          triggerNextStep("step2"); // Trigger step2 completion
-          break;
         case parentObject.name === "Flint Striker": // Add a condition for step3
           console.log("Flint Striker clicked!");
           flintStriker.visible = false;
-          triggerNextStep("step3");
+          triggerNextStep("step2");
+          break;
+        case clickedObject.name === "Circle001":
+          console.log("Circle001 clicked!");
+          petriDish.visible = false;
+          triggerNextStep("step3"); // Trigger step2 completion
+          break;
+        case clickedObject.name === "Toothpick":
+          console.log("Toothpick clicked!");
+          // not yet implemented
+          triggerNextStep("step4"); // Trigger step3 completion
           break;
         default:
           console.log("Object not mapped to a step.");
@@ -156,16 +166,20 @@ export function onStepComplete(flag) {
       // enableNext3DObject("step2Object");
       break;
     case "step2":
-      console.log("Step 2 Instruction: Click Circle001.");
+      console.log("Step 2 Instruction: click Flint Striker.");
+      if (flintStriker) {
+        flintStriker.visible = true;
+      }
+      
+      break;
+    case "step3":
+      console.log("Step 3 Instruction: Click Circle001.");
       if (petriDish) {
         petriDish.visible = true;
       }
       break;
-    case "step3":
-      console.log("Step 3 Instruction: click Flint Striker.");
-      if (flintStriker) {
-        flintStriker.visible = true;
-      }
+    case "step4":
+      console.log("Step 4 Instruction: click toothpick.");
       break;
     case "complete":
       if (finalResult) {
@@ -269,27 +283,6 @@ loader.load("./models/glove.glb", (gltf) => {
     scene.add(glove);
   });
 });
-
-
-// // Function to remove gloves from the scene
-// function removeGloves() {
-//   if (glove1 && glove2) {
-//     // Remove from selectableObjects array
-//     selectableObjects.forEach((obj, index) => {
-//       if (obj.parent === glove1 || obj.parent === glove2) {
-//         selectableObjects.splice(index, 1);
-//       }
-//     });
-
-//     // Remove from scene
-//     scene.remove(glove1);
-//     scene.remove(glove2);
-    
-//     // Clear references
-//     glove1 = null;
-//     glove2 = null;
-//   }
-// }
 
 // === Handle Window Resize ===
 window.addEventListener("resize", () => {
