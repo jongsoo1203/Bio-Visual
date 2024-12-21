@@ -43,6 +43,8 @@ let previouslyHoveredObject = null; // Track the last hovered object
 // === After Clicking Each Step Object ===
 let glove1, glove2; // to remove the gloves after clicking]
 let finalResult; // to make the final result visible at the last step
+let petriDish;
+let flintStriker;
 
 // Highlight on hover
 window.addEventListener("mousemove", (event) => {
@@ -113,15 +115,19 @@ export function startExperiment(triggerNextStep) {
       switch (true) {
         case clickedObject.name === "Cube_0": // aka the gloves
           console.log("Glove clicked!");
-          removeGloves(); // Remove both gloves from the scene
+          // Remove the gloves from
+          glove1.visible = false;
+          glove2.visible = false;
           triggerNextStep("step1"); // Trigger the next step for Petri Dish
           break;
         case clickedObject.name === "Circle001":
           console.log("Circle001 clicked!");
+          petriDish.visible = false;
           triggerNextStep("step2"); // Trigger step2 completion
           break;
         case parentObject.name === "Flint Striker": // Add a condition for step3
           console.log("Flint Striker clicked!");
+          flintStriker.visible = false;
           triggerNextStep("step3");
           break;
         default:
@@ -151,11 +157,15 @@ export function onStepComplete(flag) {
       break;
     case "step2":
       console.log("Step 2 Instruction: Click Circle001.");
-      // Example: Play an animation or update the scene
-      // playAnimation("step2Animation");
+      if (petriDish) {
+        petriDish.visible = true;
+      }
       break;
     case "step3":
       console.log("Step 3 Instruction: click Flint Striker.");
+      if (flintStriker) {
+        flintStriker.visible = true;
+      }
       break;
     case "complete":
       if (finalResult) {
@@ -180,10 +190,11 @@ loader.load("./models/lab_bench.glb", (gltf) => {
 
 // Load the petri dish
 loader.load("./models/petridish_and_loop.glb", (gltf) => {
-  const petriDish = gltf.scene;
+  petriDish = gltf.scene;
   petriDish.position.set(0.95, 0.53, -0.15); // Adjust position if necessary
   petriDish.scale.set(0.8, 0.8, 0.8);
   petriDish.name = "Petri Dish";
+  petriDish.visible = false; // Hide it initially
 
   // Add meshes to selectable objects for interaction
   petriDish.traverse((child) => {
@@ -198,10 +209,11 @@ loader.load("./models/petridish_and_loop.glb", (gltf) => {
 
 // Load the flint striker
 loader.load("./models/flint_striker.glb", (gltf) => {
-  const flintStriker = gltf.scene;
+  flintStriker = gltf.scene;
   flintStriker.name = "Flint Striker";
   flintStriker.position.set(0, 0.1, 0.15); 
   flintStriker.scale.set(0.8, 0.8, 0.8); 
+  flintStriker.visible = false; // Hide it initially
 
   // Add meshes to selectable objects for interaction
   flintStriker.traverse((child) => {
@@ -258,25 +270,26 @@ loader.load("./models/glove.glb", (gltf) => {
   });
 });
 
-// Function to remove gloves from the scene
-function removeGloves() {
-  if (glove1 && glove2) {
-    // Remove from selectableObjects array
-    selectableObjects.forEach((obj, index) => {
-      if (obj.parent === glove1 || obj.parent === glove2) {
-        selectableObjects.splice(index, 1);
-      }
-    });
 
-    // Remove from scene
-    scene.remove(glove1);
-    scene.remove(glove2);
+// // Function to remove gloves from the scene
+// function removeGloves() {
+//   if (glove1 && glove2) {
+//     // Remove from selectableObjects array
+//     selectableObjects.forEach((obj, index) => {
+//       if (obj.parent === glove1 || obj.parent === glove2) {
+//         selectableObjects.splice(index, 1);
+//       }
+//     });
+
+//     // Remove from scene
+//     scene.remove(glove1);
+//     scene.remove(glove2);
     
-    // Clear references
-    glove1 = null;
-    glove2 = null;
-  }
-}
+//     // Clear references
+//     glove1 = null;
+//     glove2 = null;
+//   }
+// }
 
 // === Handle Window Resize ===
 window.addEventListener("resize", () => {
