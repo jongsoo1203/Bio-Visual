@@ -67,10 +67,16 @@ document.addEventListener("DOMContentLoaded", () => {
    */
   nextStepButton.addEventListener("click", () => {
     hideInstructionPopup(); // Hide the instruction pop-up
+    
     const step = instructionSteps[currentStep];
-    updateStepDisplay(step.text); // Update the step display at the top
+    // If we're in a completed state, keep showing the completion message
+    if (currentStep >= instructionSteps.length - 1) {
+      updateStepDisplay("Experiment Complete!");
+    } else {
+      updateStepDisplay(step.text);
+    }
+    handleStepCompletion(step.flag); // Handle the completion of the current step
     console.log(`Current Step: ${step.flag}`); // Log the step flag for debugging
-    handleStepCompletion(step.flag); // Pass the step flag to the 3D logic for triggering the next step
   });
 
   /**
@@ -84,7 +90,20 @@ document.addEventListener("DOMContentLoaded", () => {
     if (nextStepIndex < instructionSteps.length) {
       currentStep = nextStepIndex;
       showInstructionStep(currentStep); // Show the next instruction step
+
+
+      // Update the step display with the new step's text
+      const nextStep = instructionSteps[nextStepIndex];
+      updateStepDisplay(nextStep.text); // Update the step display at the top
+
     } else {
+      // Show completion message in instruction popup
+      instructionTitle.textContent = "Experiment Complete!";
+      instructionText.textContent = "You have successfully completed all steps of the experiment.";
+      instructionPopup.classList.remove("hidden", "opacity-0");
+      updateStepDisplay("Experiment Complete!");
+
+      handleStepCompletion("complete");
       console.log("All steps completed!");
     }
   }
@@ -97,7 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Example: Send the flag to the 3D experiment or perform any necessary logic
     import("./3DExperiment.js")
       .then((module) => {
-        module.onStepComplete(flag, triggerNextStep); // Notify the 3D logic and pass the callback
+        module.onStepComplete(flag); // Notify the 3D logic and pass the callback
       })
       .catch((err) => {
         console.error("Error handling step completion:", err);

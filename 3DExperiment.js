@@ -103,15 +103,26 @@ export function startExperiment(triggerNextStep) {
     const intersects = raycaster.intersectObjects(selectableObjects, true);
     if (intersects.length > 0) {
       const clickedObject = intersects[0].object.parent; // Get the parent group of the clicked object
+      const parentObject = clickedObject.parent; // Get the parent group of the clicked object
 
       console.log(`Clicked on: ${clickedObject.name || "Unnamed Object"}`);
+      console.log(`Parent object: ${parentObject.name || "Unnamed Parent"}`);
+
 
       // Trigger the next step based on the clicked object's name
-      switch (clickedObject.name) {
-        case "Cube_0": // aka the gloves
+      switch (true) {
+        case clickedObject.name === "Cube_0": // aka the gloves
           console.log("Glove clicked!");
           removeGloves(); // Remove both gloves from the scene
           triggerNextStep("step1"); // Trigger the next step for Petri Dish
+          break;
+        case clickedObject.name === "Circle001":
+          console.log("Circle001 clicked!");
+          triggerNextStep("step2"); // Trigger step2 completion
+          break;
+        case parentObject.name === "Flint Striker": // Add a condition for step3
+          console.log("Flint Striker clicked!");
+          triggerNextStep("step3");
           break;
         default:
           console.log("Object not mapped to a step.");
@@ -129,30 +140,28 @@ scene.add(gridHelper);
  * Function: onStepComplete
  * Handles logic when a step is completed in the 3D environment.
  * @param {string} flag - The identifier of the completed step.
- * @param {function} triggerNextStep - Callback to trigger the next step.
  */
-export function onStepComplete(flag, triggerNextStep) {
-  console.log(`Step completed with flag: ${flag}`);
-
+export function onStepComplete(flag) {
   // Perform 3D logic based on the completed step
   switch (flag) {
     case "step1":
-      console.log("Step 1 logic executed.");
+      console.log("Step 1 Instruction: Click Gloves.");
       // Example: Enable interaction with the next 3D object
       // enableNext3DObject("step2Object");
       break;
     case "step2":
-      console.log("Step 2 logic executed.");
+      console.log("Step 2 Instruction: Click Circle001.");
       // Example: Play an animation or update the scene
       // playAnimation("step2Animation");
       break;
     case "step3":
-      console.log("Step 3 logic executed - showing final result");
+      console.log("Step 3 Instruction: click Flint Striker.");
+      break;
+    case "complete":
       if (finalResult) {
         finalResult.visible = true;
-        finalResult.scale.set(1, 1, 1);
       }
-      break;
+      break;  
     default:
       console.warn(`No specific logic defined for flag: ${flag}`);
   }
@@ -207,7 +216,7 @@ loader.load("./models/flint_striker.glb", (gltf) => {
 
 // Load the final result
 loader.load("./models/final_result.glb", (gltf) => {
-  const finalResult = gltf.scene;
+  finalResult = gltf.scene;
   finalResult.name = "Final Result"; // Assign a name for identification
   finalResult.visible = false; // Hide it initially
 
