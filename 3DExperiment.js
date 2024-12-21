@@ -4,10 +4,12 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { createLabEnvironment } from "./LabEnvironment.js";
 
 // -----------------------------------------------set up the 3D environment-----------------------------------------------
 // === Scene, Camera, and Renderer Setup ===
 const scene = new THREE.Scene();
+createLabEnvironment(scene); 
 const camera = new THREE.PerspectiveCamera(
   65, // Field of view
   window.innerWidth / window.innerHeight, // Aspect ratio
@@ -30,11 +32,20 @@ document.body.appendChild(renderer.domElement);
 // OrbitControls for camera interaction
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
+controls.minDistance = 0.5;  // don’t let the camera get too close
+controls.maxDistance = 3;    // don’t let the camera go too far
 
-// Directional lighting for the scene
-const light = new THREE.DirectionalLight(0xffffff, 4);
-light.position.set(5, 10, 7.5);
-scene.add(light);
+// === Lighting Setup ===
+const ambientLight = new THREE.AmbientLight(0xe6e6e6, 1.2);
+scene.add(ambientLight);
+
+const directionalLight1 = new THREE.DirectionalLight(0xe6e6e6, 1.2);
+directionalLight1.position.set(0, 10, 10);
+scene.add(directionalLight1);
+
+const directionalLight2 = new THREE.DirectionalLight(0xffffff, 1);
+directionalLight2.position.set(0, 10, 0);
+scene.add(directionalLight2);
 
 // === Raycaster, Mouse, Hover, and Click ===
 const raycaster = new THREE.Raycaster();
@@ -212,7 +223,7 @@ function wearGloves() {
 }
 
 // Add a grid helper to the scene
-const gridHelper = new THREE.GridHelper(40, 400); // Size of the grid and number of divisions
+const gridHelper = new THREE.GridHelper(40, 300); // Size of the grid and number of divisions
 gridHelper.position.set(0, -0.5, 0); // Ensure it's centered at the origin
 scene.add(gridHelper);
 
@@ -396,10 +407,22 @@ window.addEventListener("resize", () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
+// 1) Create a bounding box to keep the camera inside the "room"
+const labBoundingBox = new THREE.Box3(
+  new THREE.Vector3(-4.4, -0.4, -4.4), // a bit “tighter” in x/z
+  new THREE.Vector3(4.4, 4.4, 4.4)
+);
+// Adjust the numbers so the camera remains comfortably within your walls
+// ------------------------------------------------------------------------------------
+
 // === Animation Loop ===
 function animate() {
   requestAnimationFrame(animate);
   controls.update();
+
+  // 2) Clamp the camera position so it doesn't leave the box
+  camera.position.clamp(labBoundingBox.min, labBoundingBox.max);
+
   renderer.render(scene, camera);
 }
-animate();
+animate()
