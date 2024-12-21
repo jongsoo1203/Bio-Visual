@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const instructionTitle = document.getElementById("instructionTitle");
   const instructionText = document.getElementById("instructionText");
   const nextStepButton = document.getElementById("nextStep");
+  const stepDisplay = document.getElementById("stepDisplay");
 
   // Instruction steps data
   // I have moved this data to a separate file for better organization
@@ -26,6 +27,15 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
       instructionPopup.classList.remove("opacity-0");
     }, 10); // Trigger fade-in effect
+  }
+
+  /**
+   * Updates the step display at the top of the screen.
+   * @param {string} stepText - The text to display for the current step.
+   */
+  function updateStepDisplay(stepText) {
+    stepDisplay.classList.remove("hidden");
+    stepDisplay.textContent = stepText;
   }
 
   /**
@@ -58,6 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
   nextStepButton.addEventListener("click", () => {
     hideInstructionPopup(); // Hide the instruction pop-up
     const step = instructionSteps[currentStep];
+    updateStepDisplay(step.text); // Update the step display at the top
     console.log(`Completed Step: ${step.flag}`); // Log the step flag for debugging
     handleStepCompletion(step.flag); // Pass the step flag to the 3D logic for triggering the next step
   });
