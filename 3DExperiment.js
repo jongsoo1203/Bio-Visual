@@ -39,6 +39,10 @@ const mouse = new THREE.Vector2();
 const selectableObjects = []; // Objects that can be hovered or clicked
 let previouslyHoveredObject = null; // Track the last hovered object
 
+
+// === After Clicking Each Step Object ===
+let glove1, glove2; // to remove the gloves after clicking
+
 // Highlight on hover
 window.addEventListener("mousemove", (event) => {
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -105,6 +109,7 @@ export function startExperiment(triggerNextStep) {
       switch (clickedObject.name) {
         case "Cube_0": // aka the gloves
           console.log("Glove clicked!");
+          removeGloves(); // Remove both gloves from the scene
           triggerNextStep("step1"); // Trigger the next step for Petri Dish
           break;
         default:
@@ -210,8 +215,8 @@ loader.load("./models/final_result.glb", (gltf) => {
 
 // Load gloves
 loader.load("./models/glove.glb", (gltf) => {
-  const glove1 = gltf.scene;
-  const glove2 = gltf.scene.clone(); // Clone to create another glove
+  glove1 = gltf.scene;
+  glove2 = gltf.scene.clone(); // Clone to create another glove
 
   glove1.position.set(-1.1, 0.57, 0.2);
   glove2.position.set(-0.9, 0.57, 0.2);
@@ -233,6 +238,26 @@ loader.load("./models/glove.glb", (gltf) => {
     scene.add(glove);
   });
 });
+
+// Function to remove gloves from the scene
+function removeGloves() {
+  if (glove1 && glove2) {
+    // Remove from selectableObjects array
+    selectableObjects.forEach((obj, index) => {
+      if (obj.parent === glove1 || obj.parent === glove2) {
+        selectableObjects.splice(index, 1);
+      }
+    });
+
+    // Remove from scene
+    scene.remove(glove1);
+    scene.remove(glove2);
+    
+    // Clear references
+    glove1 = null;
+    glove2 = null;
+  }
+}
 
 // === Handle Window Resize ===
 window.addEventListener("resize", () => {
