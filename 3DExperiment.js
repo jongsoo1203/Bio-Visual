@@ -92,11 +92,9 @@ window.addEventListener("mousemove", (event) => {
 
 // -----------------------------------------------End of set up----------------------------------------------
 
-
 // === After Clicking Each Step Object ===
 // they are used to store the 3D models
 let glove1, glove2, finalResult, petriDish, flintStriker, toothpick;
-
 
 // === Add Click Feature to Trigger Next Step ===
 export function startExperiment(triggerNextStep) {
@@ -118,8 +116,9 @@ export function startExperiment(triggerNextStep) {
         case clickedObject.name === "Cube_0": // aka the gloves
           console.log("Glove clicked!");
           // Remove the gloves from
-          glove1.visible = false;
-          glove2.visible = false;
+          // glove1.visible = false;
+          // glove2.visible = false;
+          wearGloves(); // Animate the gloves to the camera's view
           triggerNextStep("step1"); // Trigger the next step for Petri Dish
           break;
         case parentObject.name === "Flint Striker": // Add a condition for step3
@@ -130,9 +129,9 @@ export function startExperiment(triggerNextStep) {
         case parentObject.name === "Toothpick":
           console.log("Toothpick clicked!");
           toothpick.visible = false;
-          
+
           triggerNextStep("step3"); // Trigger step3 completion
-          break;  
+          break;
         case clickedObject.name === "Circle001": // This is the toothpick
           console.log("Petri Dish clicked!");
           toothpick.visible = false;
@@ -146,6 +145,59 @@ export function startExperiment(triggerNextStep) {
       }
     }
   });
+}
+
+// === Wear Gloves Function ===
+function wearGloves() {
+  if (!glove1 || !glove2) {
+    console.log("Gloves are not loaded yet.");
+    return;
+  }
+
+  console.log("Wearing gloves...");
+
+  // Ensure gloves are visible
+  glove1.visible = true;
+  glove2.visible = true;
+
+  // Attach gloves to follow the camera
+  const targetPosition1 = new THREE.Vector3(-0.3, -0.3, -0.5); // Left hand position relative to the camera
+  const targetPosition2 = new THREE.Vector3(0.3, -0.3, -0.5); // Right hand position relative to the camera
+
+  // Define rotation offsets as quaternions for the gloves
+  const leftGloveRotationOffset = new THREE.Quaternion();
+  // Set the left glove's rotation offset using Euler angles (pitch, yaw, roll)
+  leftGloveRotationOffset.setFromEuler(new THREE.Euler(Math.PI, 0, Math.PI/11));
+
+  const rightGloveRotationOffset = new THREE.Quaternion();
+  // Set the right glove's rotation offset using Euler angles (pitch, yaw, roll)
+  rightGloveRotationOffset.setFromEuler(
+    new THREE.Euler(Math.PI / 8, Math.PI / 3, Math.PI /11)
+  );
+
+  function updateGloves() {
+    // Update the gloves' positions relative to the camera
+    glove1.position.copy(camera.localToWorld(targetPosition1.clone()));
+    glove2.position.copy(camera.localToWorld(targetPosition2.clone()));
+
+    // Update the gloves' rotations relative to the camera
+    const cameraQuaternion = camera.quaternion.clone();
+
+    const leftGloveQuaternion = cameraQuaternion.multiply(leftGloveRotationOffset);
+    const rightGloveQuaternion = cameraQuaternion.multiply(rightGloveRotationOffset);
+
+    glove1.quaternion.copy(leftGloveQuaternion);
+    glove2.quaternion.copy(rightGloveQuaternion);
+  }
+
+  // Add updateGloves to the animation loop
+  const originalAnimate = animate;
+  animate = function () {
+    updateGloves();
+    originalAnimate();
+  };
+
+  console.log("Gloves are now following the camera's view with proper rotation.");
 }
 
 // Add a grid helper to the scene
@@ -172,7 +224,7 @@ export function onStepComplete(flag) {
       break;
     case "step3":
       console.log("Step 3 Instruction: Click toothpick.");
-      if(toothpick){
+      if (toothpick) {
         toothpick.visible = true;
       }
       break;
@@ -186,15 +238,13 @@ export function onStepComplete(flag) {
       // if (finalResult) {
       //   finalResult.visible = true;
       // }
-      break;  
+      break;
     default:
       console.warn(`No specific logic defined for flag: ${flag}`);
   }
 }
 
-
 // ---------------------------------------------- Load 3D Models ----------------------------------------------
-
 
 // === Load Models Dynamically ===
 const loader = new GLTFLoader();
@@ -231,8 +281,8 @@ loader.load("./models/petridish_and_loop.glb", (gltf) => {
 loader.load("./models/flint_striker.glb", (gltf) => {
   flintStriker = gltf.scene;
   flintStriker.name = "Flint Striker";
-  flintStriker.position.set(0, 0.1, 0.15); 
-  flintStriker.scale.set(0.8, 0.8, 0.8); 
+  flintStriker.position.set(0, 0.1, 0.15);
+  flintStriker.scale.set(0.8, 0.8, 0.8);
   flintStriker.visible = false; // Hide it initially
 
   // Add meshes to selectable objects for interaction
@@ -252,7 +302,6 @@ loader.load("./models/toothpick.glb", (gltf) => {
   toothpick.name = "Toothpick"; // Assign a name for identification
   toothpick.visible = false; // Hide it initially
 
-
   // Traverse and ensure child objects also have proper names
   toothpick.traverse((child) => {
     if (child.isMesh) {
@@ -270,7 +319,6 @@ loader.load("./models/final_result.glb", (gltf) => {
   finalResult = gltf.scene;
   finalResult.name = "Final Result"; // Assign a name for identification
   finalResult.visible = false; // Hide it initially
-
 
   // Traverse and add its meshes to selectable objects for interaction
   finalResult.traverse((child) => {
