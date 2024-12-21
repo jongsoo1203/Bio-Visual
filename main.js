@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
     hideInstructionPopup(); // Hide the instruction pop-up
     const step = instructionSteps[currentStep];
     updateStepDisplay(step.text); // Update the step display at the top
-    console.log(`Completed Step: ${step.flag}`); // Log the step flag for debugging
+    console.log(`Current Step: ${step.flag}`); // Log the step flag for debugging
     handleStepCompletion(step.flag); // Pass the step flag to the 3D logic for triggering the next step
   });
 

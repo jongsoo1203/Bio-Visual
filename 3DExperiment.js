@@ -41,7 +41,8 @@ let previouslyHoveredObject = null; // Track the last hovered object
 
 
 // === After Clicking Each Step Object ===
-let glove1, glove2; // to remove the gloves after clicking
+let glove1, glove2; // to remove the gloves after clicking]
+let finalResult; // to make the final result visible at the last step
 
 // Highlight on hover
 window.addEventListener("mousemove", (event) => {
@@ -145,6 +146,13 @@ export function onStepComplete(flag, triggerNextStep) {
       // Example: Play an animation or update the scene
       // playAnimation("step2Animation");
       break;
+    case "step3":
+      console.log("Step 3 logic executed - showing final result");
+      if (finalResult) {
+        finalResult.visible = true;
+        finalResult.scale.set(1, 1, 1);
+      }
+      break;
     default:
       console.warn(`No specific logic defined for flag: ${flag}`);
   }
@@ -201,6 +209,8 @@ loader.load("./models/flint_striker.glb", (gltf) => {
 loader.load("./models/final_result.glb", (gltf) => {
   const finalResult = gltf.scene;
   finalResult.name = "Final Result"; // Assign a name for identification
+  finalResult.visible = false; // Hide it initially
+
 
   // Traverse and add its meshes to selectable objects for interaction
   finalResult.traverse((child) => {
