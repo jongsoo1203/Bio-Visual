@@ -95,10 +95,7 @@ window.addEventListener("mousemove", (event) => {
 
 // === After Clicking Each Step Object ===
 // they are used to store the 3D models
-let glove1, glove2;
-let finalResult; 
-let petriDish;
-let flintStriker;
+let glove1, glove2, finalResult, petriDish, flintStriker, toothpick;
 
 
 // === Add Click Feature to Trigger Next Step ===
@@ -130,15 +127,19 @@ export function startExperiment(triggerNextStep) {
           flintStriker.visible = false;
           triggerNextStep("step2");
           break;
-        case clickedObject.name === "Circle001":
-          console.log("Circle001 clicked!");
-          petriDish.visible = false;
-          triggerNextStep("step3"); // Trigger step2 completion
-          break;
-        case clickedObject.name === "Toothpick":
+        case parentObject.name === "Toothpick":
           console.log("Toothpick clicked!");
-          // not yet implemented
-          triggerNextStep("step4"); // Trigger step3 completion
+          toothpick.visible = false;
+          
+          triggerNextStep("step3"); // Trigger step3 completion
+          break;  
+        case clickedObject.name === "Circle001": // This is the toothpick
+          console.log("Petri Dish clicked!");
+          toothpick.visible = false;
+          if (finalResult) {
+            finalResult.visible = true;
+          }
+          triggerNextStep("step4"); // Trigger step4 completion
           break;
         default:
           console.log("Object not mapped to a step.");
@@ -162,34 +163,38 @@ export function onStepComplete(flag) {
   switch (flag) {
     case "step1":
       console.log("Step 1 Instruction: Click Gloves.");
-      // Example: Enable interaction with the next 3D object
-      // enableNext3DObject("step2Object");
       break;
     case "step2":
       console.log("Step 2 Instruction: click Flint Striker.");
       if (flintStriker) {
         flintStriker.visible = true;
       }
-      
       break;
     case "step3":
-      console.log("Step 3 Instruction: Click Circle001.");
+      console.log("Step 3 Instruction: Click toothpick.");
+      if(toothpick){
+        toothpick.visible = true;
+      }
+      break;
+    case "step4":
+      console.log("Step 4 Instruction: click Petri Dish.");
       if (petriDish) {
         petriDish.visible = true;
       }
       break;
-    case "step4":
-      console.log("Step 4 Instruction: click toothpick.");
-      break;
     case "complete":
-      if (finalResult) {
-        finalResult.visible = true;
-      }
+      // if (finalResult) {
+      //   finalResult.visible = true;
+      // }
       break;  
     default:
       console.warn(`No specific logic defined for flag: ${flag}`);
   }
 }
+
+
+// ---------------------------------------------- Load 3D Models ----------------------------------------------
+
 
 // === Load Models Dynamically ===
 const loader = new GLTFLoader();
@@ -210,11 +215,12 @@ loader.load("./models/petridish_and_loop.glb", (gltf) => {
   petriDish.name = "Petri Dish";
   petriDish.visible = false; // Hide it initially
 
-  // Add meshes to selectable objects for interaction
+  // Traverse and ensure child objects also have proper names
   petriDish.traverse((child) => {
     if (child.isMesh) {
+      child.name = "PetriDishMesh"; // Name individual meshes for debugging
       child.material = child.material.clone(); // Clone material to avoid sharing
-      selectableObjects.push(child);
+      selectableObjects.push(child); // Make it selectable
     }
   });
 
@@ -238,6 +244,25 @@ loader.load("./models/flint_striker.glb", (gltf) => {
   });
 
   scene.add(flintStriker);
+});
+
+// Load the toothpick
+loader.load("./models/toothpick.glb", (gltf) => {
+  toothpick = gltf.scene;
+  toothpick.name = "Toothpick"; // Assign a name for identification
+  toothpick.visible = false; // Hide it initially
+
+
+  // Traverse and ensure child objects also have proper names
+  toothpick.traverse((child) => {
+    if (child.isMesh) {
+      child.name = "ToothpickMesh"; // Name individual meshes for debugging
+      child.material = child.material.clone(); // Clone material to avoid sharing
+      selectableObjects.push(child); // Make it selectable
+    }
+  });
+
+  scene.add(toothpick); // Add the model to the scene
 });
 
 // Load the final result

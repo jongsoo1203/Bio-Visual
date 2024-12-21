@@ -16,6 +16,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // ---------------------------------------------------- Main Script ---------------------------------------------------- //
 
+let currentStep = 0;
+let finalObjectClicked = false; // Flag for the flint striker step
+
   /**
    * Function: Show a specific instruction step.
    * @param {number} stepIndex - Index of the current instruction step.
@@ -62,6 +65,10 @@ document.addEventListener("DOMContentLoaded", () => {
       showInstructionStep(currentStep);
     }, 1000);
   });
+  
+
+// ---------------------------------------------------- End of Main Script ---------------------------------------------------- //
+
 
   /**
    * Event Listener: Handle the "OK" button for the current instruction step.
@@ -72,10 +79,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const step = instructionSteps[currentStep];
     console.log(`Current Step: ${step.flag}`); // Log current step immediately
 
-    // Special handling for step4
-    if (step.flag === "step4") {
-      updateStepDisplay(step.text);
-      handleStepCompletion(step.flag); // Still handle the step completion
+    // Special handling for step5
+    if (step.flag === "step4"&& finalObjectClicked) {
+      completeExperiment();
       return;
     }
 
@@ -88,10 +94,15 @@ document.addEventListener("DOMContentLoaded", () => {
     handleStepCompletion(step.flag); // Handle the completion of the current step
   });
 
-// ---------------------------------------------------- End of Main Script ---------------------------------------------------- //
 
-  let currentStep = 0;
-  let flintStrikerClicked = false; // Flag for the flint striker step
+  function completeExperiment() {
+    instructionTitle.textContent = "Experiment Complete!";
+    instructionText.textContent = "You have successfully completed all steps of the experiment.";
+    instructionPopup.classList.remove("hidden", "opacity-0");
+    updateStepDisplay("Experiment Complete!");
+    handleStepCompletion("complete");
+    console.log("All steps completed!");
+  }
 
   /**
    * Function: Trigger the next instruction step from the 3D environment.
@@ -101,9 +112,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const nextStepIndex =
       instructionSteps.findIndex((step) => step.flag === flag) + 1;
 
-      // Set the flintStrikerClicked flag when step2 is completed
-    if (flag === "step2") {
-      flintStrikerClicked = true;
+    // Handle specific step4 logic
+    if (flag === "step4") {
+      if (!finalObjectClicked) {
+        finalObjectClicked = true; // Set the flag to indicate step4 is active
+        updateStepDisplay("Click the final object to complete the experiment."); // Update display
+        showInstructionStep(currentStep); // Show step4 instructions
+      } else {
+        completeExperiment(); // Complete the experiment if already clicked
+      }
+      return;
     }
 
     if (nextStepIndex < instructionSteps.length) {
@@ -115,17 +133,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const nextStep = instructionSteps[nextStepIndex];
       updateStepDisplay(nextStep.text); // Update the step display at the top
 
-    } else {
-      // Show completion message in instruction popup
-      instructionTitle.textContent = "Experiment Complete!";
-      instructionText.textContent = "You have successfully completed all steps of the experiment.";
-      instructionPopup.classList.remove("hidden", "opacity-0");
-      updateStepDisplay("Experiment Complete!");
-
-      handleStepCompletion("complete");
-      console.log("All steps completed!");
     }
   }
+
 
   /**
    * Function: Handle logic for completing a step in the 3D environment.
