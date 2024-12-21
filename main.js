@@ -27,7 +27,7 @@ let finalObjectClicked = false; // Flag for the flint striker step
     const step = instructionSteps[stepIndex];
     instructionTitle.textContent = step.title;
     instructionText.textContent = step.text;
-    instructionPopup.classList.remove("hidden", "opacity-0");
+    instructionPopup.classList.remove("hidden");
     setTimeout(() => {
       instructionPopup.classList.remove("opacity-0");
     }, 10); // Trigger fade-in effect
@@ -58,6 +58,7 @@ let finalObjectClicked = false; // Flag for the flint striker step
   startExperimentButton.addEventListener("click", () => {
     popup.classList.add("hidden");
     experimentContainer.classList.remove("hidden");
+    
     initializeExperiment();
 
     // Show the first instruction step after a slight delay

@@ -94,7 +94,8 @@ window.addEventListener("mousemove", (event) => {
 
 // === After Clicking Each Step Object ===
 // they are used to store the 3D models
-let glove1, glove2, finalResult, petriDish, flintStriker, toothpick;
+let glove1, glove2, finalResult, petriDish, flintStriker, toothpick, burner;
+let currentStep = "step1"; // Track the current step of the experiment
 
 // === Add Click Feature to Trigger Next Step ===
 export function startExperiment(triggerNextStep) {
@@ -115,30 +116,40 @@ export function startExperiment(triggerNextStep) {
       switch (true) {
         case clickedObject.name === "Cube_0": // aka the gloves
           console.log("Glove clicked!");
-          // Remove the gloves from
-          // glove1.visible = false;
-          // glove2.visible = false;
           wearGloves(); // Animate the gloves to the camera's view
-          triggerNextStep("step1"); // Trigger the next step for Petri Dish
+
+          // logic to trigger the next step and save the current step ( just copy and paste this logic for the other cases and switch the numbers)
+          if (currentStep === "step1") {
+            triggerNextStep("step1");
+            currentStep = "step2";
+          }
           break;
         case parentObject.name === "Flint Striker": // Add a condition for step3
           console.log("Flint Striker clicked!");
-          flintStriker.visible = false;
-          triggerNextStep("step2");
+
+          if (currentStep === "step2") {
+            flintStriker.visible = false;
+            triggerNextStep("step2");
+            currentStep = "step3";
+          }
           break;
         case parentObject.name === "Toothpick":
           console.log("Toothpick clicked!");
-          toothpick.visible = false;
 
-          triggerNextStep("step3"); // Trigger step3 completion
+          if (currentStep === "step3") {
+            toothpick.visible = false;
+            triggerNextStep("step3");
+            currentStep = "step4";
+          }
           break;
         case clickedObject.name === "Circle001": // This is the toothpick
           console.log("Petri Dish clicked!");
-          toothpick.visible = false;
-          if (finalResult) {
-            finalResult.visible = true;
+          
+          if (currentStep === "step4") {
+            petriDish.visible = false;
+            triggerNextStep("step4");
+            currentStep = "complete";
           }
-          triggerNextStep("step4"); // Trigger step4 completion
           break;
         default:
           console.log("Object not mapped to a step.");
@@ -218,21 +229,21 @@ export function onStepComplete(flag) {
       break;
     case "step2":
       console.log("Step 2 Instruction: click Flint Striker.");
-      if (flintStriker) {
-        flintStriker.visible = true;
-      }
+      // if (flintStriker) {
+      //   flintStriker.visible = true;
+      // }
       break;
     case "step3":
       console.log("Step 3 Instruction: Click toothpick.");
-      if (toothpick) {
-        toothpick.visible = true;
-      }
+      // if (toothpick) {
+      //   toothpick.visible = true;
+      // }
       break;
     case "step4":
       console.log("Step 4 Instruction: click Petri Dish.");
-      if (petriDish) {
-        petriDish.visible = true;
-      }
+      // if (petriDish) {
+      //   petriDish.visible = true;
+      // }
       break;
     case "complete":
       // if (finalResult) {
@@ -263,7 +274,7 @@ loader.load("./models/petridish_and_loop.glb", (gltf) => {
   petriDish.position.set(0.95, 0.53, -0.15); // Adjust position if necessary
   petriDish.scale.set(0.8, 0.8, 0.8);
   petriDish.name = "Petri Dish";
-  petriDish.visible = false; // Hide it initially
+  //petriDish.visible = false; // Hide it initially
 
   // Traverse and ensure child objects also have proper names
   petriDish.traverse((child) => {
@@ -283,7 +294,7 @@ loader.load("./models/flint_striker.glb", (gltf) => {
   flintStriker.name = "Flint Striker";
   flintStriker.position.set(0, 0.1, 0.15);
   flintStriker.scale.set(0.8, 0.8, 0.8);
-  flintStriker.visible = false; // Hide it initially
+  //flintStriker.visible = false; // Hide it initially
 
   // Add meshes to selectable objects for interaction
   flintStriker.traverse((child) => {
@@ -300,7 +311,7 @@ loader.load("./models/flint_striker.glb", (gltf) => {
 loader.load("./models/toothpick.glb", (gltf) => {
   toothpick = gltf.scene;
   toothpick.name = "Toothpick"; // Assign a name for identification
-  toothpick.visible = false; // Hide it initially
+  //toothpick.visible = false; // Hide it initially
 
   // Traverse and ensure child objects also have proper names
   toothpick.traverse((child) => {
@@ -312,6 +323,27 @@ loader.load("./models/toothpick.glb", (gltf) => {
   });
 
   scene.add(toothpick); // Add the model to the scene
+});
+
+// Load the burner
+loader.load("./models/bunsen_burner.glb", (gltf) => {
+  burner = gltf.scene;
+  burner.name = "Toothpick"; // Assign a name for identification
+  //toothpick.visible = false; // Hide it initially
+  burner.position.set(-0.38, 0.53, 0); // x, y, z
+  burner.scale.set(1.3,1.3,1.3); // Scale the burner
+  burner.rotation.y = Math.PI / 3; // Rotate the burner
+
+  // Traverse and ensure child objects also have proper names
+  burner.traverse((child) => {
+    if (child.isMesh) {
+      child.name = "ToothpickMesh"; // Name individual meshes for debugging
+      child.material = child.material.clone(); // Clone material to avoid sharing
+      selectableObjects.push(child); // Make it selectable
+    }
+  });
+
+  scene.add(burner); // Add the model to the scene
 });
 
 // Load the final result
