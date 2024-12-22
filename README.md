@@ -2,8 +2,9 @@
 
 repo tree
 C:.
-└─models
-    └─flint_striker
+├─models
+│  └─flint_striker
+└─textures
     
 ## Usefull Info 
 - The canter aka (0,0,0) is gonna be the lab table 
