@@ -139,7 +139,6 @@ export function startExperiment(triggerNextStep) {
           console.log("Flint Striker clicked!");
 
           if (currentStep === "step2") {
-            flintStriker.visible = false;
             triggerNextStep("step2");
             currentStep = "step3";
           }
@@ -148,7 +147,6 @@ export function startExperiment(triggerNextStep) {
           console.log("Toothpick clicked!");
 
           if (currentStep === "step3") {
-            toothpick.visible = false;
             triggerNextStep("step3");
             currentStep = "step4";
           }
@@ -157,7 +155,6 @@ export function startExperiment(triggerNextStep) {
           console.log("Petri Dish clicked!");
           
           if (currentStep === "step4") {
-            petriDish.visible = false;
             triggerNextStep("step4");
             currentStep = "complete";
           }
@@ -257,9 +254,9 @@ export function onStepComplete(flag) {
       // }
       break;
     case "complete":
-      // if (finalResult) {
-      //   finalResult.visible = true;
-      // }
+      if (finalResult) {
+        finalResult.visible = true;
+      }
       break;
     default:
       console.warn(`No specific logic defined for flag: ${flag}`);
