@@ -82,6 +82,27 @@ scene.add(ground);
 
 // ------------------------------------------ End of flint striker plane ------------------------------------------
 
+
+
+// ------------------------------------------------ Collision Box for Burner ---------------------------------------
+
+// Create bounding boxes for collision detection
+const burnerBoundingBox = new THREE.Box3();
+const flintStrikerBoundingBox = new THREE.Box3();
+let triggerNextStepCallback = null;
+
+
+function checkCollision() {
+  // Update bounding boxes with current positions
+  burnerBoundingBox.setFromObject(burner);
+  flintStrikerBoundingBox.setFromObject(flintStriker);
+  
+  return burnerBoundingBox.intersectsBox(flintStrikerBoundingBox);
+}
+
+// ------------------------------------------------ End of Collision Box for Burner ---------------------------------------
+
+// === Mouse Events for Drag===
 window.addEventListener("click", (event) => {
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -99,6 +120,7 @@ window.addEventListener("click", (event) => {
   }
 });
 
+// === Mouse Events for Drag===
 window.addEventListener("mousedown", (event) => {
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -108,21 +130,28 @@ window.addEventListener("mousedown", (event) => {
   const intersects = raycaster.intersectObjects(selectableObjects, true);
   if (intersects.length > 0) {
     const clickedObject = intersects[0].object;
-    if (clickedObject.userData.draggable || 
-        (clickedObject.parent && clickedObject.parent.userData.draggable)) {
-      isDragging = true;
-      controls.enabled = false; // Disable orbit controls while dragging
+    const parentObject = clickedObject.parent;
+
+    // Check if the clicked object or its parent is the flint striker and is draggable
+    if ((clickedObject.userData.isFlintStriker || 
+         (parentObject && parentObject.name === "Flint Striker")) && 
+         currentStep === "step2") {
       
-      // Store the initial intersection point and object position
-      const groundIntersects = raycaster.intersectObjects([ground], false);
+      isDragging = true;
+      draggable = flintStriker; // Set the entire flint striker model as draggable
+      controls.enabled = false; // Disable orbit controls while dragging
+
+      // Calculate the drag offset
+      const groundIntersects = raycaster.intersectObject(ground);
       if (groundIntersects.length > 0) {
-        dragStartPosition.copy(draggable.position);
-        dragOffset.copy(dragStartPosition).sub(groundIntersects[0].point);
+        const intersectionPoint = groundIntersects[0].point;
+        dragOffset.copy(flintStriker.position).sub(intersectionPoint);
       }
     }
   }
 });
 
+// Update the draggable object's position while dragging
 window.addEventListener("mousemove", (event) => {
   if (!isDragging || !draggable) return;
 
@@ -134,11 +163,20 @@ window.addEventListener("mousemove", (event) => {
   const intersects = raycaster.intersectObjects([ground], false);
   if (intersects.length > 0) {
     const intersectionPoint = intersects[0].point;
-    // Update draggable object position while maintaining the initial offset
-    draggable.position.x = intersectionPoint.x + dragOffset.x;
-    draggable.position.z = intersectionPoint.z + dragOffset.z;
-    // Keep the y position constant at table height
-    draggable.position.y = 0.1;
+    
+    // Update position while maintaining the y-position
+    draggable.position.set(
+      intersectionPoint.x + dragOffset.x,
+      0.1, // Keep constant height
+      intersectionPoint.z + dragOffset.z
+    );
+
+    // Check for collision with burner if in step2
+    if (currentStep === "step2") {
+      if (checkCollision()) {
+        console.log("Collision detected with Bunsen burner!");
+      }
+    }
   }
 });
 
@@ -146,6 +184,40 @@ window.addEventListener("mouseup", () => {
   if (isDragging) {
     isDragging = false;
     controls.enabled = true; // Re-enable orbit controls
+    
+    if (currentStep === "step2" && draggable === flintStriker) {
+      // Update both bounding boxes with current positions
+      burnerBoundingBox.setFromObject(burner);
+      flintStrikerBoundingBox.setFromObject(flintStriker);
+
+      // Check for collision
+      if (checkCollision()) {
+        console.log("Collision detected with Bunsen burner!");
+
+        // Reset the flint striker's emissive color
+        flintStriker.traverse((child) => {
+          if (child.isMesh) {
+            child.material.emissive.setHex(child.userData.originalEmissiveHex || 0x000000);
+          }
+        });
+
+        // Disable dragging
+        flintStriker.traverse((child) => {
+          if (child.isMesh) {
+            child.userData.draggable = false;
+          }
+        });
+        draggable = null;
+
+        // Trigger the next step
+        if (triggerNextStepCallback) {
+          triggerNextStepCallback("step2");
+          currentStep = "step3";
+        } else {
+          console.warn("triggerNextStepCallback is not defined");
+        }
+      }
+    }
   }
 });
 
@@ -197,7 +269,7 @@ window.addEventListener("mousemove", (event) => {
   }
 });
 
-// -----------------------------------------------End of set up----------------------------------------------
+// -----------------------------------------------End of env set up----------------------------------------------
 
 // === After Clicking Each Step Object ===
 // they are used to store the 3D models
@@ -206,6 +278,8 @@ let currentStep = "step1"; // Track the current step of the experiment
 
 // === Add Click Feature to Trigger Next Step ===
 export function startExperiment(triggerNextStep) {
+  triggerNextStepCallback = triggerNextStep;
+  
   // Add event listener for clicks
   window.addEventListener("click", (event) => {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
