@@ -2,7 +2,7 @@
 
 The **Bio-Visual** project is an advanced 3D virtual laboratory that provides an interactive and immersive environment for biological experimentation and learning. This project leverages cutting-edge web technologies to simulate real-world lab scenarios, making it ideal for educational purposes, training, or research demonstrations.
 
-![Image 2024-12-21 at 15 48 31_884c8d69](https://github.com/user-attachments/assets/b5c95ba2-ef5a-4daf-be09-8b137f393a08)
+![Image](./models/image.png)
 
 ## Project Overview
 
@@ -56,7 +56,7 @@ The project was built with a focus on accessibility, scalability, and integratio
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/Bio-Visual.git
+   git clone https://github.com/jongsoo1203/Bio-Visual.git
    cd Bio-Visual
    ```
 
@@ -73,7 +73,7 @@ The project was built with a focus on accessibility, scalability, and integratio
 ### Option 2: Hosted Version
 
    ```
-   https://loty2019.github.io/Bio-Visual/
+   https://jongsoo1203.github.io/Bio-Visual/
    ```
 
 ---
