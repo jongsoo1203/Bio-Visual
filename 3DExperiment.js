@@ -1,3 +1,4 @@
+// 3DExperiment.js
 // Description: This file contains the 3D experiment logic for the virtual lab.
 // Jongsoo Ha and Lorenzo Orio (2024)
 
@@ -53,13 +54,97 @@ const mouse = new THREE.Vector2();
 const selectableObjects = []; // Objects that can be hovered or clicked
 let previouslyHoveredObject = null; // Track the last hovered object
 
+// === Draggable Logic ===
+let draggable = null;
+let isDragging = false;
+const moveMouse = new THREE.Vector2();
+
+// ------------------------------------------ Flint striker plane ------------------------------------------
+// Add a grid helper and ground plane to the scene
+const gridHelperflint = new THREE.GridHelper(40, 300); // Size of the grid and number of divisions
+gridHelperflint.position.set(0, -0.5, 0); // Ensure it's centered at the origin
+scene.add(gridHelperflint);
+
+// Create an invisible ground plane for drag interaction
+const groundGeometry = new THREE.PlaneGeometry(2, 2);
+const groundMaterial = new THREE.MeshBasicMaterial({ 
+    visible: false 
+});
+const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+ground.rotation.x = -Math.PI / 2; // Rotate to be horizontal
+ground.position.y = 0.1; // Set at table height
+ground.userData.ground = true; // Mark as ground for raycaster
+scene.add(ground);
+
+// ------------------------------------------ End of flint striker plane ------------------------------------------
+
+window.addEventListener("click", (event) => {
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  if (draggable) {
+    const intersects = raycaster.intersectObjects(moveMouse, true);
+    if (intersects.length > 0) {
+      const ground = intersects.find((obj) => obj.object.userData.ground);
+      if (ground) {
+        const target = ground.point;
+        draggable.position.x = target.x;
+        draggable.position.z = target.z;
+      }
+    }
+  }
+});
+
+window.addEventListener("mousedown", (event) => {
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+
+  // Check if we clicked on the draggable object
+  const intersects = raycaster.intersectObjects(selectableObjects, true);
+  if (intersects.length > 0) {
+    const clickedObject = intersects[0].object;
+    if (clickedObject.userData.draggable || 
+        (clickedObject.parent && clickedObject.parent.userData.draggable)) {
+      isDragging = true;
+      controls.enabled = false; // Disable orbit controls while dragging
+    }
+  }
+});
+
+window.addEventListener("mousemove", (event) => {
+  if (!isDragging || !draggable) return;
+
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+
+  // Intersect with the ground plane
+  const intersects = raycaster.intersectObjects([ground], false);
+  if (intersects.length > 0) {
+    const intersectionPoint = intersects[0].point;
+    // Update draggable object position
+    draggable.position.x = intersectionPoint.x;
+    draggable.position.z = intersectionPoint.z;
+    // Keep the y position constant at table height
+    draggable.position.y = 0.1;
+  }
+});
+
+window.addEventListener("mouseup", () => {
+  if (isDragging) {
+    isDragging = false;
+    controls.enabled = true; // Re-enable orbit controls
+  }
+});
+
 // === Highlight on Hover ===
 window.addEventListener("mousemove", (event) => {
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
   raycaster.setFromCamera(mouse, camera);
-
   const intersects = raycaster.intersectObjects(selectableObjects, true);
+
 
   if (intersects.length > 0) {
     const hoveredObject = intersects[0].object.parent; // Get the parent group of the object
@@ -135,13 +220,33 @@ export function startExperiment(triggerNextStep) {
             currentStep = "step2";
           }
           break;
-        case parentObject.name === "Flint Striker": // Add a condition for step3
+        case parentObject.name === "Flint Striker" || clickedObject.userData.isFlintStriker: // Add a condition for step3
           console.log("Flint Striker clicked!");
 
           if (currentStep === "step2") {
-            triggerNextStep("step2");
-            currentStep = "step3";
+            // Enable dragging
+            draggable = flintStriker; // Set as current draggable object
+            flintStriker.traverse((child) => {
+              if (child.isMesh) {
+                child.userData.draggable = true;
+                console.log("Enabled dragging for flint striker mesh:", child.name);
+              }
+            });
+            
+            // Optionally add visual feedback that the object is now draggable
+            flintStriker.traverse((child) => {
+              if (child.isMesh) {
+                child.material.emissive.setHex(0x00ff00); // Green glow to indicate draggable
+              }
+            });
+
+            console.log("Flint Striker is now draggable. Drag it to proceed.");
           }
+          // I need to uncommen this when I add collision with another object
+          // if (currentStep === "step2") {
+          //   triggerNextStep("step2");
+          //   currentStep = "step3";
+          // }
           break;
         case parentObject.name === "Toothpick":
           console.log("Toothpick clicked!");
@@ -237,21 +342,12 @@ export function onStepComplete(flag) {
       break;
     case "step2":
       console.log("Step 2 Instruction: click Flint Striker.");
-      // if (flintStriker) {
-      //   flintStriker.visible = true;
-      // }
       break;
     case "step3":
       console.log("Step 3 Instruction: Click toothpick.");
-      // if (toothpick) {
-      //   toothpick.visible = true;
-      // }
       break;
     case "step4":
       console.log("Step 4 Instruction: click Petri Dish.");
-      // if (petriDish) {
-      //   petriDish.visible = true;
-      // }
       break;
     case "complete":
       if (finalResult) {
@@ -282,7 +378,6 @@ loader.load("./models/petridish_and_loop.glb", (gltf) => {
   petriDish.position.set(0.95, 0.53, -0.15); // Adjust position if necessary
   petriDish.scale.set(0.8, 0.8, 0.8);
   petriDish.name = "Petri Dish";
-  //petriDish.visible = false; // Hide it initially
 
   // Traverse and ensure child objects also have proper names
   petriDish.traverse((child) => {
@@ -302,12 +397,13 @@ loader.load("./models/flint_striker.glb", (gltf) => {
   flintStriker.name = "Flint Striker";
   flintStriker.position.set(0, 0.1, 0.15);
   flintStriker.scale.set(0.8, 0.8, 0.8);
-  //flintStriker.visible = false; // Hide it initially
 
   // Add meshes to selectable objects for interaction
   flintStriker.traverse((child) => {
     if (child.isMesh) {
       child.material = child.material.clone(); // Clone material to avoid sharing
+      child.userData.isFlintStriker = true; // Mark as flint striker for identification
+      child.userData.draggable = false; // Mark as draggable
       selectableObjects.push(child); // Make it selectable
     }
   });
@@ -319,7 +415,6 @@ loader.load("./models/flint_striker.glb", (gltf) => {
 loader.load("./models/toothpick.glb", (gltf) => {
   toothpick = gltf.scene;
   toothpick.name = "Toothpick"; // Assign a name for identification
-  //toothpick.visible = false; // Hide it initially
 
   // Traverse and ensure child objects also have proper names
   toothpick.traverse((child) => {
@@ -337,7 +432,7 @@ loader.load("./models/toothpick.glb", (gltf) => {
 loader.load("./models/bunsen_burner.glb", (gltf) => {
   burner = gltf.scene;
   burner.name = "Toothpick"; // Assign a name for identification
-  //toothpick.visible = false; // Hide it initially
+
   burner.position.set(-0.38, 0.53, 0); // x, y, z
   burner.scale.set(1.3,1.3,1.3); // Scale the burner
   burner.rotation.y = Math.PI / 3; // Rotate the burner

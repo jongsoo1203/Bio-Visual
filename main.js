@@ -1,4 +1,5 @@
-// Description: Main JavaScript file for the experiment.
+// main.js
+// // Description: Main JavaScript file for the experiment.
 // Jongsoo Ha and Lorenzo Orio (2024)
 
 
