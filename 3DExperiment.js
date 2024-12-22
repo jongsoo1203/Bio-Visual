@@ -61,7 +61,8 @@ let isDragging = false;
 const moveMouse = new THREE.Vector2();
 // Store the offset between mouse and object when starting drag
 let dragOffset = new THREE.Vector3();
-let dragStartPosition = new THREE.Vector3();
+let storedCameraPosition = null;
+let storedControlsTarget = null;
 
 // ------------------------------------------ Flint striker plane ------------------------------------------
 // Add a grid helper and ground plane to the scene
@@ -300,6 +301,11 @@ window.addEventListener("mousemove", (event) => {
       if (checkCollision()) {
         console.log("Collision detected with Bunsen burner!");
 
+        // First, store camera state
+        storedCameraPosition = camera.position.clone();
+        storedControlsTarget = controls.target.clone();
+
+
         // Reset the flint striker's emissive color
         flintStriker.traverse((child) => {
           if (child.isMesh) {
@@ -491,19 +497,6 @@ function wearGloves() {
   const targetPosition1 = new THREE.Vector3(-0.3, -0.3, -0.5); // Left hand position relative to the camera
   const targetPosition2 = new THREE.Vector3(0.3, -0.3, -0.5); // Right hand position relative to the camera
 
-  // // Define rotation offsets as quaternions for the gloves
-  // const leftGloveRotationOffset = new THREE.Quaternion();
-  // // Set the left glove's rotation offset using Euler angles (pitch, yaw, roll)
-  // leftGloveRotationOffset.setFromEuler(
-  //   new THREE.Euler(Math.PI, 0, Math.PI / 11)
-  // );
-
-  // const rightGloveRotationOffset = new THREE.Quaternion();
-  // // Set the right glove's rotation offset using Euler angles (pitch, yaw, roll)
-  // rightGloveRotationOffset.setFromEuler(
-  //   new THREE.Euler(Math.PI / 8, Math.PI / 3, Math.PI / 11)
-  // );
-
   // Define rotation offsets for each glove separately
   const leftGloveRotation = new THREE.Euler(1 ,3*Math.PI/2 ,0);
   const rightGloveRotation = new THREE.Euler(1,Math.PI/2,Math.PI);
@@ -524,19 +517,6 @@ function wearGloves() {
     // Apply rotations separately
     glove1.quaternion.copy(cameraQuaternionLeft.multiply(leftRotationQuat));
     glove2.quaternion.copy(cameraQuaternionRight.multiply(rightRotationQuat));
-
-    // // Update the gloves' rotations relative to the camera
-    // const cameraQuaternion = camera.quaternion.clone();
-
-    // const leftGloveQuaternion = cameraQuaternion.multiply(
-    //   leftGloveRotationOffset
-    // );
-    // const rightGloveQuaternion = cameraQuaternion.multiply(
-    //   rightGloveRotationOffset
-    // );
-
-    // glove1.quaternion.copy(leftGloveQuaternion);
-    // glove2.quaternion.copy(rightGloveQuaternion);
   }
 
   // Add updateGloves to the animation loop
@@ -572,6 +552,13 @@ export function onStepComplete(flag) {
       break;
     case "step3":
       console.log("Step 3 Instruction: Click toothpick.");
+      if (storedCameraPosition && storedControlsTarget) {
+        requestAnimationFrame(() => {
+          camera.position.copy(storedCameraPosition);
+          controls.target.copy(storedControlsTarget);
+          controls.update();
+        });
+      }
       break;
     case "step4":
       console.log("Step 4 Instruction: click Petri Dish.");
