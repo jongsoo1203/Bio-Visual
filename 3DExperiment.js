@@ -149,7 +149,7 @@ window.addEventListener("mousedown", (event) => {
   }
 });
 
-function showVideoPopup(onCloseCallback) {
+function strikeShowVideoPopup(onCloseCallback) {
   // === Create a full-screen overlay ===
   const overlay = document.createElement("div");
   overlay.style.position = "fixed";
@@ -199,6 +199,68 @@ function showVideoPopup(onCloseCallback) {
     document.body.removeChild(overlay);
     triggerNextStepCallback("step3");
 
+    // If a callback is provided, call it
+    if (onCloseCallback) {
+      onCloseCallback();
+    }
+  });
+
+  // Add everything to the overlay
+  overlay.appendChild(iframe);
+  overlay.appendChild(closeButton);
+
+  // Finally, add the overlay to the body
+  document.body.appendChild(overlay);
+}
+
+function incuabteShowVideoPopup(onCloseCallback) {
+  // === Create a full-screen overlay ===
+  const overlay = document.createElement("div");
+  overlay.style.position = "fixed";
+  overlay.style.top = "0";
+  overlay.style.left = "0";
+  overlay.style.width = "100%";
+  overlay.style.height = "100%";
+  overlay.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+  overlay.style.zIndex = "9999"; // make sure it is on top
+  overlay.style.display = "flex";
+  overlay.style.flexDirection = "column";
+  overlay.style.justifyContent = "center";
+  overlay.style.alignItems = "center";
+
+  // === Create an iframe for the YouTube video ===
+  const iframe = document.createElement("iframe");
+  iframe.width = "560";
+  iframe.height = "315";
+  // Autoplay parameter added
+  iframe.src = "https://www.youtube.com/embed/n3slQ9_Rbh8?autoplay=1";
+  iframe.title = "YouTube video player";
+  iframe.frameBorder = "0";
+  iframe.allow =
+    "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+  iframe.allowFullscreen = true;
+
+  // === Create the close button ===
+  const closeButton = document.createElement("button");
+  closeButton.textContent = "✖";
+  closeButton.style.position = "absolute";
+  closeButton.style.top = "300px";
+  closeButton.style.right = "500px";
+  closeButton.style.fontSize = "2rem";
+  closeButton.style.color = "#fff";
+  closeButton.style.background = "white";
+  closeButton.style.border = "none";
+  closeButton.style.borderRadius = "50%";
+  closeButton.style.width = "40px";
+  closeButton.style.height = "40px";
+  closeButton.style.display = "flex";
+  closeButton.style.justifyContent = "center";
+  closeButton.style.alignItems = "center";
+  closeButton.style.cursor = "pointer";
+
+  closeButton.addEventListener("click", () => {
+    // Remove the overlay from the DOM
+    document.body.removeChild(overlay);
     // If a callback is provided, call it
     if (onCloseCallback) {
       onCloseCallback();
@@ -391,7 +453,7 @@ export function startExperiment(triggerNextStep) {
         case parentObject.name === "Toothpick":
           console.log("Toothpick clicked!");
           if (currentStep === "step3") {
-            showVideoPopup();
+            strikeShowVideoPopup();
             currentStep = "step4";
           }
       
@@ -400,6 +462,7 @@ export function startExperiment(triggerNextStep) {
           console.log("Petri Dish clicked!");
 
           if (currentStep === "step4") {
+            incuabteShowVideoPopup();
             triggerNextStep("step4", true);
             currentStep = "complete";
           }
