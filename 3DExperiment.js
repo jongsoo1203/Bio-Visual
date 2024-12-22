@@ -58,6 +58,10 @@ let previouslyHoveredObject = null; // Track the last hovered object
 let draggable = null;
 let isDragging = false;
 const moveMouse = new THREE.Vector2();
+// Store the offset between mouse and object when starting drag
+let dragOffset = new THREE.Vector3();
+let dragStartPosition = new THREE.Vector3();
+
 
 // ------------------------------------------ Flint striker plane ------------------------------------------
 // Add a grid helper and ground plane to the scene
@@ -108,6 +112,13 @@ window.addEventListener("mousedown", (event) => {
         (clickedObject.parent && clickedObject.parent.userData.draggable)) {
       isDragging = true;
       controls.enabled = false; // Disable orbit controls while dragging
+      
+      // Store the initial intersection point and object position
+      const groundIntersects = raycaster.intersectObjects([ground], false);
+      if (groundIntersects.length > 0) {
+        dragStartPosition.copy(draggable.position);
+        dragOffset.copy(dragStartPosition).sub(groundIntersects[0].point);
+      }
     }
   }
 });
@@ -123,9 +134,9 @@ window.addEventListener("mousemove", (event) => {
   const intersects = raycaster.intersectObjects([ground], false);
   if (intersects.length > 0) {
     const intersectionPoint = intersects[0].point;
-    // Update draggable object position
-    draggable.position.x = intersectionPoint.x;
-    draggable.position.z = intersectionPoint.z;
+    // Update draggable object position while maintaining the initial offset
+    draggable.position.x = intersectionPoint.x + dragOffset.x;
+    draggable.position.z = intersectionPoint.z + dragOffset.z;
     // Keep the y position constant at table height
     draggable.position.y = 0.1;
   }
