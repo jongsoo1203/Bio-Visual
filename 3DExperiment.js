@@ -65,7 +65,7 @@ let dragStartPosition = new THREE.Vector3();
 
 // ------------------------------------------ Flint striker plane ------------------------------------------
 // Add a grid helper and ground plane to the scene
-const gridHelperflint = new THREE.GridHelper(40, 300); // Size of the grid and number of divisions
+const gridHelperflint = new THREE.GridHelper(30, 30); // Size of the grid and number of divisions
 gridHelperflint.position.set(0, -0.5, 0); // Ensure it's centered at the origin
 scene.add(gridHelperflint);
 
