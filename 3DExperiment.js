@@ -390,8 +390,11 @@ export function startExperiment(triggerNextStep) {
           break;
         case parentObject.name === "Toothpick":
           console.log("Toothpick clicked!");
-          showVideoPopup();
-          currentStep = "step4";
+          if (currentStep === "step3") {
+            showVideoPopup();
+            currentStep = "step4";
+          }
+      
           break;
         case clickedObject.name === "Circle001": // This is the toothpick
           console.log("Petri Dish clicked!");

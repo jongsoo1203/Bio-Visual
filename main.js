@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // ---------------------------------------------------- Main Script ---------------------------------------------------- //
 
 let currentStep = 0;
-let finalObjectClicked = false; // Flag for the flint striker step
+let isComplete = false;
 
   /**
    * Function: Show a specific instruction step.
@@ -77,15 +77,17 @@ let finalObjectClicked = false; // Flag for the flint striker step
    */
   nextStepButton.addEventListener("click", () => {
     hideInstructionPopup(); // Hide the instruction pop-up
-    
+    if (isComplete) return; // Prevent further steps after completion
     const step = instructionSteps[currentStep];
     console.log(`Current Step: ${step.flag}`); // Log current step immediately
     updateStepDisplay(step.text);
     handleStepCompletion(step.flag); // Handle the completion of the current step
+
   });
 
 
   function completeExperiment() {
+    isComplete = true;
     instructionTitle.textContent = "Experiment Complete!";
     instructionText.textContent = "You have successfully completed all steps of the experiment.";
     instructionPopup.classList.remove("hidden", "opacity-0");
@@ -97,6 +99,7 @@ let finalObjectClicked = false; // Flag for the flint striker step
   /**
    * Function: Trigger the next instruction step from the 3D environment.
    * @param {string} flag - The flag of the completed step.
+   * @param {boolean} finalObjectClicked - Flag for the final step.
    */
   function triggerNextStep(flag, finalObjectClicked = false) {
     const nextStepIndex =
@@ -105,7 +108,7 @@ let finalObjectClicked = false; // Flag for the flint striker step
     // Handle specific step4 logic
     if (flag === "step4") {
       if (!finalObjectClicked) {
--        updateStepDisplay("Close the petri plate with the lid facing down."); // Update display
+-       updateStepDisplay("Close the petri plate with the lid facing down."); // Update display
         showInstructionStep(currentStep); // Show step4 instructions
       } else {
         completeExperiment(); // Complete the experiment if already clicked
