@@ -175,25 +175,7 @@ window.addEventListener("mousemove", (event) => {
     if (currentStep === "step2") {
       if (checkCollision()) {
         console.log("Collision detected with Bunsen burner!");
-      }
-    }
-  }
-});
-
-window.addEventListener("mouseup", () => {
-  if (isDragging) {
-    isDragging = false;
-    controls.enabled = true; // Re-enable orbit controls
-    
-    if (currentStep === "step2" && draggable === flintStriker) {
-      // Update both bounding boxes with current positions
-      burnerBoundingBox.setFromObject(burner);
-      flintStrikerBoundingBox.setFromObject(flintStriker);
-
-      // Check for collision
-      if (checkCollision()) {
-        console.log("Collision detected with Bunsen burner!");
-
+        
         // Reset the flint striker's emissive color
         flintStriker.traverse((child) => {
           if (child.isMesh) {
@@ -207,9 +189,12 @@ window.addEventListener("mouseup", () => {
             child.userData.draggable = false;
           }
         });
+        
+        isDragging = false;
         draggable = null;
+        controls.enabled = true;
 
-        // Trigger the next step
+        // Trigger the next step immediately
         if (triggerNextStepCallback) {
           triggerNextStepCallback("step2");
           currentStep = "step3";
@@ -218,6 +203,14 @@ window.addEventListener("mouseup", () => {
         }
       }
     }
+  }
+});
+
+// Stop dragging when mouse is released
+window.addEventListener("mouseup", () => {
+  if (isDragging) {
+    isDragging = false;
+    controls.enabled = true; // Re-enable orbit controls
   }
 });
 
