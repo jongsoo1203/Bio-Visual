@@ -10,7 +10,7 @@ import { createLabEnvironment } from "./LabEnvironment.js";
 // -----------------------------------------------set up the 3D environment-----------------------------------------------
 // === Scene, Camera, and Renderer Setup ===
 const scene = new THREE.Scene();
-createLabEnvironment(scene); 
+createLabEnvironment(scene);
 const camera = new THREE.PerspectiveCamera(
   65, // Field of view
   window.innerWidth / window.innerHeight, // Aspect ratio
@@ -33,8 +33,9 @@ document.body.appendChild(renderer.domElement);
 // OrbitControls for camera interaction
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
-controls.minDistance = 0.5;  // don’t let the camera get too close
-controls.maxDistance = 3;    // don’t let the camera go too far
+controls.minDistance = 0.5; // don’t let the camera get too close
+controls.maxDistance = 3; // don’t let the camera go too far
+let currentStep = "step1"; // Track the current step of the experiment
 
 // === Lighting Setup ===
 const ambientLight = new THREE.AmbientLight(0xe6e6e6, 1.2);
@@ -62,7 +63,6 @@ const moveMouse = new THREE.Vector2();
 let dragOffset = new THREE.Vector3();
 let dragStartPosition = new THREE.Vector3();
 
-
 // ------------------------------------------ Flint striker plane ------------------------------------------
 // Add a grid helper and ground plane to the scene
 const gridHelperflint = new THREE.GridHelper(30, 30); // Size of the grid and number of divisions
@@ -71,8 +71,8 @@ scene.add(gridHelperflint);
 
 // Create an invisible ground plane for drag interaction
 const groundGeometry = new THREE.PlaneGeometry(2, 2);
-const groundMaterial = new THREE.MeshBasicMaterial({ 
-    visible: false 
+const groundMaterial = new THREE.MeshBasicMaterial({
+  visible: false,
 });
 const ground = new THREE.Mesh(groundGeometry, groundMaterial);
 ground.rotation.x = -Math.PI / 2; // Rotate to be horizontal
@@ -82,8 +82,6 @@ scene.add(ground);
 
 // ------------------------------------------ End of flint striker plane ------------------------------------------
 
-
-
 // ------------------------------------------------ Collision Box for Burner ---------------------------------------
 
 // Create bounding boxes for collision detection
@@ -91,12 +89,11 @@ const burnerBoundingBox = new THREE.Box3();
 const flintStrikerBoundingBox = new THREE.Box3();
 let triggerNextStepCallback = null;
 
-
 function checkCollision() {
   // Update bounding boxes with current positions
   burnerBoundingBox.setFromObject(burner);
   flintStrikerBoundingBox.setFromObject(flintStriker);
-  
+
   return burnerBoundingBox.intersectsBox(flintStrikerBoundingBox);
 }
 
@@ -133,10 +130,11 @@ window.addEventListener("mousedown", (event) => {
     const parentObject = clickedObject.parent;
 
     // Check if the clicked object or its parent is the flint striker and is draggable
-    if ((clickedObject.userData.isFlintStriker || 
-         (parentObject && parentObject.name === "Flint Striker")) && 
-         currentStep === "step2") {
-      
+    if (
+      (clickedObject.userData.isFlintStriker ||
+        (parentObject && parentObject.name === "Flint Striker")) &&
+      currentStep === "step2"
+    ) {
       isDragging = true;
       draggable = flintStriker; // Set the entire flint striker model as draggable
       controls.enabled = false; // Disable orbit controls while dragging
@@ -151,6 +149,71 @@ window.addEventListener("mousedown", (event) => {
   }
 });
 
+function showVideoPopup(onCloseCallback) {
+  // === Create a full-screen overlay ===
+  const overlay = document.createElement("div");
+  overlay.style.position = "fixed";
+  overlay.style.top = "0";
+  overlay.style.left = "0";
+  overlay.style.width = "100%";
+  overlay.style.height = "100%";
+  overlay.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+  overlay.style.zIndex = "9999"; // make sure it is on top
+  overlay.style.display = "flex";
+  overlay.style.flexDirection = "column";
+  overlay.style.justifyContent = "center";
+  overlay.style.alignItems = "center";
+
+  // === Create an iframe for the YouTube video ===
+  const iframe = document.createElement("iframe");
+  iframe.width = "560";
+  iframe.height = "315";
+  // Autoplay parameter added
+  iframe.src = "https://www.youtube.com/embed/Fz4qp1uIvT4?autoplay=1";
+  iframe.title = "YouTube video player";
+  iframe.frameBorder = "0";
+  iframe.allow =
+    "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+  iframe.allowFullscreen = true;
+
+  // === Create the close button ===
+  const closeButton = document.createElement("button");
+  closeButton.textContent = "✖";
+  closeButton.style.position = "absolute";
+  closeButton.style.top = "300px";
+  closeButton.style.right = "500px";
+  closeButton.style.fontSize = "2rem";
+  closeButton.style.color = "#fff";
+  closeButton.style.background = "white";
+  closeButton.style.border = "none";
+  closeButton.style.borderRadius = "50%";
+  closeButton.style.width = "40px";
+  closeButton.style.height = "40px";
+  closeButton.style.display = "flex";
+  closeButton.style.justifyContent = "center";
+  closeButton.style.alignItems = "center";
+  closeButton.style.cursor = "pointer";
+
+  closeButton.addEventListener("click", () => {
+    // Remove the overlay from the DOM
+    document.body.removeChild(overlay);
+    triggerNextStepCallback("step3");
+    currentStep = "step4";
+
+    // If a callback is provided, call it
+    if (onCloseCallback) {
+      onCloseCallback();
+    }
+  });
+
+  // Add everything to the overlay
+  overlay.appendChild(iframe);
+  overlay.appendChild(closeButton);
+
+  // Finally, add the overlay to the body
+  document.body.appendChild(overlay);
+}
+
 // Update the draggable object's position while dragging
 window.addEventListener("mousemove", (event) => {
   if (!isDragging || !draggable) return;
@@ -163,7 +226,7 @@ window.addEventListener("mousemove", (event) => {
   const intersects = raycaster.intersectObjects([ground], false);
   if (intersects.length > 0) {
     const intersectionPoint = intersects[0].point;
-    
+
     // Update position while maintaining the y-position
     draggable.position.set(
       intersectionPoint.x + dragOffset.x,
@@ -175,11 +238,13 @@ window.addEventListener("mousemove", (event) => {
     if (currentStep === "step2") {
       if (checkCollision()) {
         console.log("Collision detected with Bunsen burner!");
-        
+
         // Reset the flint striker's emissive color
         flintStriker.traverse((child) => {
           if (child.isMesh) {
-            child.material.emissive.setHex(child.userData.originalEmissiveHex || 0x000000);
+            child.material.emissive.setHex(
+              child.userData.originalEmissiveHex || 0x000000
+            );
           }
         });
 
@@ -189,7 +254,7 @@ window.addEventListener("mousemove", (event) => {
             child.userData.draggable = false;
           }
         });
-        
+
         isDragging = false;
         draggable = null;
         controls.enabled = true;
@@ -197,6 +262,7 @@ window.addEventListener("mousemove", (event) => {
         // Trigger the next step immediately
         if (triggerNextStepCallback) {
           triggerNextStepCallback("step2");
+          flintStriker.visible = false;
           currentStep = "step3";
         } else {
           console.warn("triggerNextStepCallback is not defined");
@@ -220,7 +286,6 @@ window.addEventListener("mousemove", (event) => {
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
   raycaster.setFromCamera(mouse, camera);
   const intersects = raycaster.intersectObjects(selectableObjects, true);
-
 
   if (intersects.length > 0) {
     const hoveredObject = intersects[0].object.parent; // Get the parent group of the object
@@ -267,12 +332,11 @@ window.addEventListener("mousemove", (event) => {
 // === After Clicking Each Step Object ===
 // they are used to store the 3D models
 let glove1, glove2, finalResult, petriDish, flintStriker, toothpick, burner;
-let currentStep = "step1"; // Track the current step of the experiment
 
 // === Add Click Feature to Trigger Next Step ===
 export function startExperiment(triggerNextStep) {
   triggerNextStepCallback = triggerNextStep;
-  
+
   // Add event listener for clicks
   window.addEventListener("click", (event) => {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -298,7 +362,8 @@ export function startExperiment(triggerNextStep) {
             currentStep = "step2";
           }
           break;
-        case parentObject.name === "Flint Striker" || clickedObject.userData.isFlintStriker: // Add a condition for step3
+        case parentObject.name === "Flint Striker" ||
+          clickedObject.userData.isFlintStriker: // Add a condition for step3
           console.log("Flint Striker clicked!");
 
           if (currentStep === "step2") {
@@ -307,11 +372,14 @@ export function startExperiment(triggerNextStep) {
             flintStriker.traverse((child) => {
               if (child.isMesh) {
                 child.userData.draggable = true;
-                console.log("Enabled dragging for flint striker mesh:", child.name);
+                console.log(
+                  "Enabled dragging for flint striker mesh:",
+                  child.name
+                );
               }
             });
-            
-            // Optionally add visual feedback that the object is now draggable
+
+            // Change the emissive color to green to indicate draggable
             flintStriker.traverse((child) => {
               if (child.isMesh) {
                 child.material.emissive.setHex(0x00ff00); // Green glow to indicate draggable
@@ -328,15 +396,11 @@ export function startExperiment(triggerNextStep) {
           break;
         case parentObject.name === "Toothpick":
           console.log("Toothpick clicked!");
-
-          if (currentStep === "step3") {
-            triggerNextStep("step3");
-            currentStep = "step4";
-          }
+          showVideoPopup();
           break;
         case clickedObject.name === "Circle001": // This is the toothpick
           console.log("Petri Dish clicked!");
-          
+
           if (currentStep === "step4") {
             triggerNextStep("step4");
             currentStep = "complete";
@@ -369,12 +433,14 @@ function wearGloves() {
   // Define rotation offsets as quaternions for the gloves
   const leftGloveRotationOffset = new THREE.Quaternion();
   // Set the left glove's rotation offset using Euler angles (pitch, yaw, roll)
-  leftGloveRotationOffset.setFromEuler(new THREE.Euler(Math.PI, 0, Math.PI/11));
+  leftGloveRotationOffset.setFromEuler(
+    new THREE.Euler(Math.PI, 0, Math.PI / 11)
+  );
 
   const rightGloveRotationOffset = new THREE.Quaternion();
   // Set the right glove's rotation offset using Euler angles (pitch, yaw, roll)
   rightGloveRotationOffset.setFromEuler(
-    new THREE.Euler(Math.PI / 8, Math.PI / 3, Math.PI /11)
+    new THREE.Euler(Math.PI / 8, Math.PI / 3, Math.PI / 11)
   );
 
   function updateGloves() {
@@ -385,8 +451,12 @@ function wearGloves() {
     // Update the gloves' rotations relative to the camera
     const cameraQuaternion = camera.quaternion.clone();
 
-    const leftGloveQuaternion = cameraQuaternion.multiply(leftGloveRotationOffset);
-    const rightGloveQuaternion = cameraQuaternion.multiply(rightGloveRotationOffset);
+    const leftGloveQuaternion = cameraQuaternion.multiply(
+      leftGloveRotationOffset
+    );
+    const rightGloveQuaternion = cameraQuaternion.multiply(
+      rightGloveRotationOffset
+    );
 
     glove1.quaternion.copy(leftGloveQuaternion);
     glove2.quaternion.copy(rightGloveQuaternion);
@@ -399,7 +469,9 @@ function wearGloves() {
     originalAnimate();
   };
 
-  console.log("Gloves are now following the camera's view with proper rotation.");
+  console.log(
+    "Gloves are now following the camera's view with proper rotation."
+  );
 }
 
 // Add a grid helper to the scene
@@ -511,8 +583,8 @@ loader.load("./models/bunsen_burner.glb", (gltf) => {
   burner = gltf.scene;
   burner.name = "Toothpick"; // Assign a name for identification
 
-  burner.position.set(-0.38, 0.53, 0); // x, y, z
-  burner.scale.set(1.3,1.3,1.3); // Scale the burner
+  burner.position.set(-0.38, 0.53, -0.2); // x, y, z
+  burner.scale.set(1.3, 1.3, 1.3); // Scale the burner
   burner.rotation.y = Math.PI / 3; // Rotate the burner
 
   // Traverse and ensure child objects also have proper names
@@ -595,4 +667,4 @@ function animate() {
 
   renderer.render(scene, camera);
 }
-animate()
+animate();
