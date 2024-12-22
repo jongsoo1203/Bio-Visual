@@ -80,19 +80,7 @@ let finalObjectClicked = false; // Flag for the flint striker step
     
     const step = instructionSteps[currentStep];
     console.log(`Current Step: ${step.flag}`); // Log current step immediately
-
-    // Special handling for step5
-    if (step.flag === "step4"&& finalObjectClicked) {
-      completeExperiment();
-      return;
-    }
-
-    // If we're in a completed state, keep showing the completion message
-    if (currentStep >= instructionSteps.length - 1) {
-      updateStepDisplay("Experiment Complete!");
-    } else {
-      updateStepDisplay(step.text);
-    }
+    updateStepDisplay(step.text);
     handleStepCompletion(step.flag); // Handle the completion of the current step
   });
 
@@ -110,15 +98,14 @@ let finalObjectClicked = false; // Flag for the flint striker step
    * Function: Trigger the next instruction step from the 3D environment.
    * @param {string} flag - The flag of the completed step.
    */
-  function triggerNextStep(flag) {
+  function triggerNextStep(flag, finalObjectClicked = false) {
     const nextStepIndex =
       instructionSteps.findIndex((step) => step.flag === flag) + 1;
 
     // Handle specific step4 logic
     if (flag === "step4") {
       if (!finalObjectClicked) {
-        finalObjectClicked = true; // Set the flag to indicate step4 is active
-        updateStepDisplay("Click the final object to complete the experiment."); // Update display
+-        updateStepDisplay("Close the petri plate with the lid facing down."); // Update display
         showInstructionStep(currentStep); // Show step4 instructions
       } else {
         completeExperiment(); // Complete the experiment if already clicked

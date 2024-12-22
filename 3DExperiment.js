@@ -198,7 +198,6 @@ function showVideoPopup(onCloseCallback) {
     // Remove the overlay from the DOM
     document.body.removeChild(overlay);
     triggerNextStepCallback("step3");
-    currentStep = "step4";
 
     // If a callback is provided, call it
     if (onCloseCallback) {
@@ -388,21 +387,17 @@ export function startExperiment(triggerNextStep) {
 
             console.log("Flint Striker is now draggable. Drag it to proceed.");
           }
-          // I need to uncommen this when I add collision with another object
-          // if (currentStep === "step2") {
-          //   triggerNextStep("step2");
-          //   currentStep = "step3";
-          // }
           break;
         case parentObject.name === "Toothpick":
           console.log("Toothpick clicked!");
           showVideoPopup();
+          currentStep = "step4";
           break;
         case clickedObject.name === "Circle001": // This is the toothpick
           console.log("Petri Dish clicked!");
 
           if (currentStep === "step4") {
-            triggerNextStep("step4");
+            triggerNextStep("step4", true);
             currentStep = "complete";
           }
           break;
