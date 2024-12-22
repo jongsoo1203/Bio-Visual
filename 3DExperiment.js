@@ -491,36 +491,52 @@ function wearGloves() {
   const targetPosition1 = new THREE.Vector3(-0.3, -0.3, -0.5); // Left hand position relative to the camera
   const targetPosition2 = new THREE.Vector3(0.3, -0.3, -0.5); // Right hand position relative to the camera
 
-  // Define rotation offsets as quaternions for the gloves
-  const leftGloveRotationOffset = new THREE.Quaternion();
-  // Set the left glove's rotation offset using Euler angles (pitch, yaw, roll)
-  leftGloveRotationOffset.setFromEuler(
-    new THREE.Euler(Math.PI, 0, Math.PI / 11)
-  );
+  // // Define rotation offsets as quaternions for the gloves
+  // const leftGloveRotationOffset = new THREE.Quaternion();
+  // // Set the left glove's rotation offset using Euler angles (pitch, yaw, roll)
+  // leftGloveRotationOffset.setFromEuler(
+  //   new THREE.Euler(Math.PI, 0, Math.PI / 11)
+  // );
 
-  const rightGloveRotationOffset = new THREE.Quaternion();
-  // Set the right glove's rotation offset using Euler angles (pitch, yaw, roll)
-  rightGloveRotationOffset.setFromEuler(
-    new THREE.Euler(Math.PI / 8, Math.PI / 3, Math.PI / 11)
-  );
+  // const rightGloveRotationOffset = new THREE.Quaternion();
+  // // Set the right glove's rotation offset using Euler angles (pitch, yaw, roll)
+  // rightGloveRotationOffset.setFromEuler(
+  //   new THREE.Euler(Math.PI / 8, Math.PI / 3, Math.PI / 11)
+  // );
+
+  // Define rotation offsets for each glove separately
+  const leftGloveRotation = new THREE.Euler(1 ,3*Math.PI/2 ,0);
+  const rightGloveRotation = new THREE.Euler(1,Math.PI/2,Math.PI);
 
   function updateGloves() {
     // Update the gloves' positions relative to the camera
     glove1.position.copy(camera.localToWorld(targetPosition1.clone()));
     glove2.position.copy(camera.localToWorld(targetPosition2.clone()));
 
-    // Update the gloves' rotations relative to the camera
-    const cameraQuaternion = camera.quaternion.clone();
+    // Create new quaternions for each update to avoid reference issues
+    const cameraQuaternionLeft = camera.quaternion.clone();
+    const cameraQuaternionRight = camera.quaternion.clone();
 
-    const leftGloveQuaternion = cameraQuaternion.multiply(
-      leftGloveRotationOffset
-    );
-    const rightGloveQuaternion = cameraQuaternion.multiply(
-      rightGloveRotationOffset
-    );
+    // Create fresh quaternions from Euler rotations each update
+    const leftRotationQuat = new THREE.Quaternion().setFromEuler(leftGloveRotation);
+    const rightRotationQuat = new THREE.Quaternion().setFromEuler(rightGloveRotation);
 
-    glove1.quaternion.copy(leftGloveQuaternion);
-    glove2.quaternion.copy(rightGloveQuaternion);
+    // Apply rotations separately
+    glove1.quaternion.copy(cameraQuaternionLeft.multiply(leftRotationQuat));
+    glove2.quaternion.copy(cameraQuaternionRight.multiply(rightRotationQuat));
+
+    // // Update the gloves' rotations relative to the camera
+    // const cameraQuaternion = camera.quaternion.clone();
+
+    // const leftGloveQuaternion = cameraQuaternion.multiply(
+    //   leftGloveRotationOffset
+    // );
+    // const rightGloveQuaternion = cameraQuaternion.multiply(
+    //   rightGloveRotationOffset
+    // );
+
+    // glove1.quaternion.copy(leftGloveQuaternion);
+    // glove2.quaternion.copy(rightGloveQuaternion);
   }
 
   // Add updateGloves to the animation loop
@@ -683,11 +699,13 @@ loader.load("./models/glove.glb", (gltf) => {
   glove2 = gltf.scene.clone(); // Clone to create another glove
 
   glove1.position.set(-1.1, 0.57, 0.2);
-  glove2.position.set(-0.9, 0.57, 0.2);
+  glove2.position.set(-0.9, 0.53, 0.2);
   glove1.scale.set(0.08, 0.08, 0.08);
   glove2.scale.set(0.08, 0.08, 0.08);
   glove1.rotation.y = -Math.PI / 3;
   glove2.rotation.y = -Math.PI / 2;
+  glove2.rotateX(-Math.PI);
+
   glove1.name = "Glove 1";
   glove2.name = "Glove 2";
 

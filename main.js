@@ -73,7 +73,7 @@ let isComplete = false;
 
 
   /**
-   * Event Listener: Handle the "OK" button for the current instruction step.
+   * Event Listener: Handle the "OK" button for the next instruction step.
    */
   nextStepButton.addEventListener("click", () => {
     hideInstructionPopup(); // Hide the instruction pop-up
@@ -85,7 +85,9 @@ let isComplete = false;
 
   });
 
-
+  /**
+   * Function: Complete the experiment and show the final message.
+   */
   function completeExperiment() {
     isComplete = true;
     instructionTitle.textContent = "Experiment Complete!";
